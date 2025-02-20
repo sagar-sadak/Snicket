@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "scheme": "acme",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow App to use your location."
+        }
+      ]
+    ],
+    "name": "MAS-first-assignment",
+    "slug": "MAS-first-assignment"
+  }
+}
