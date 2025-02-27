@@ -14,7 +14,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } f
 
 const Login = () => {
   const router = useRouter();
-  const [message, setMessage] = useState('MAS Assignment');
+  const [message, setMessage] = useState('Snicket');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const auth = getAuth(app);

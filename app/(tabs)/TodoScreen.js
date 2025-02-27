@@ -1,5 +1,5 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
-import { Button, IconButton } from 'react-native-paper';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import { IconButton } from 'react-native-paper';
 import React, {useState} from 'react' 
 import {FIRESTORE_DB} from '../../firebaseConfig'
 import { addDoc, collection } from 'firebase/firestore';
