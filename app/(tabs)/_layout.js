@@ -45,11 +45,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="CurrencyExchangeScreen"
+        name="profile"
         options={{
-          title: 'Forex',
+          title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'card-sharp' : 'card-outline'} color={color} size={24}/>
+            <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={24}/>
           ),
         }}
       />
