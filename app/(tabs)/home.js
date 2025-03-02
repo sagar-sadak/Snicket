@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAuth, signOut } from "firebase/auth";
 
@@ -22,22 +22,40 @@ export default function HomeScreen() {
     router.replace("/");
   };
 
+  const handleBookPress = (book) => {
+    Alert.alert(
+      book.title,
+      "Choose an option:",
+      [
+        {text: "Borrow", onPress: () => console.log("Borrowing ", book.title)},
+        {text: "Exchange", onPress: () => console.log("Exchanging ", book.title)},
+        {text: "Cancel", style: "cancel"}
+      ]
+    )
+
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.button} onPress={exit}>
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
 
+      <Text style={styles.heading}>Books Available for Listing</Text>
+
       <FlatList
         data={books}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.bookItem}>
+          <TouchableOpacity style = {styles.bookItem} onPress={() => handleBookPress(item)}>
+            <View style={styles.bookItem}>
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style={styles.bookUser}>Listed by {item.user}</Text>
             </View>
           </View>
+          </TouchableOpacity>
+          
         )}
       />
 
@@ -70,6 +88,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  heading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   bookItem: {
     flexDirection: 'column',
