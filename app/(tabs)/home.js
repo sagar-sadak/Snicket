@@ -1,5 +1,6 @@
 import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { getAuth, signOut } from "firebase/auth";
 import { FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc} from "firebase/firestore";
@@ -14,6 +15,12 @@ const books = [
 export default function HomeScreen() {
   const router = useRouter();
   const auth = getAuth();
+
+  const db = FIRESTORE_DB;
+  const user = auth.currentUser;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
 
   const exit = () => {
     signOut(auth).then(() => {
@@ -34,7 +41,6 @@ export default function HomeScreen() {
         {text: "Cancel", style: "cancel"}
       ]
     );
-
   };
 
   const handleCreateListing = () => {
@@ -43,10 +49,35 @@ export default function HomeScreen() {
       " ",
       [
         {text: "Add book by ISBN", onPress: () => console.log("ISBN Listing")},
-        {text: "Add book by Title and Author", onPress: () => console.log("Normal Listing")},
+        {text: "Add book by Title and Author", onPress: () => setModalVisible(true)},
         {text: "Cancel", style: "cancel"}
       ]
     );
+  };
+
+  const addBookToFirestore = async () => {
+    if (!title || !author){
+      Alert.alert("Error", "Please enter both title and author.");
+      return; 
+    }
+    try {
+      await addDoc(collection(db, "listings"), {
+        title, 
+        author, 
+        listedBy: user?.uid,
+        listedByName: user?.displayName || "Unknown",
+        timestamp: new Date(),
+
+      });
+      Alert.alert("Success,", "Book Listed");
+      setTitle('');
+      setAuthor('');
+      setModalVisible(false);
+    } catch (error){
+      console.error("Error adding document: ", error);
+      Alert.alert("Error", "Failed to add book");
+
+    }
   };
 
   return (
@@ -78,6 +109,32 @@ export default function HomeScreen() {
       <TouchableOpacity style = {styles.button} onPress={handleCreateListing}>
         <Text style = {styles.buttonText}>Create a Listing</Text>
       </TouchableOpacity>
+
+      <Modal visible = {modalVisible} animationType='slide' transparent>
+        <View style = {styles.modalContainer}>
+          <View style = {styles.modalContent}>
+            <Text style = {styles.modalTitle}>Type Book Title and Author</Text>
+            <TextInput
+            style = {styles.input}
+            placeholder='Book Title'
+            value={title}
+            onChangeText={setTitle}
+            />
+            <TextInput
+            style = {styles.input}
+            placeholder='Author'
+            value= {author}
+            onChangeText={setAuthor}
+            />
+            <TouchableOpacity style= {styles.modalButton} onPress={addBookToFirestore}>
+            <Text style= {styles.modalButtonText}>Add Listing</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style = {styles.modalCloseButton} onPress={()=> setModalVisible(false)}>
+            <Text style= {styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>            
+          </View>
+        </View>
+      </Modal>
 
     </View>
   );
@@ -141,4 +198,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  modalButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  modalButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  }
 });
