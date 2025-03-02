@@ -27,8 +27,8 @@ export default function HomeScreen() {
       book.title,
       "Choose an option:",
       [
-        {text: "Borrow", onPress: () => console.log("Borrowing ", book.title)},
-        {text: "Exchange", onPress: () => console.log("Exchanging ", book.title)},
+        {text: "Borrow", onPress: () => Alert.alert("Borrow request sent!")},
+        {text: "Exchange", onPress: () => Alert.alert("Exchange request sent!")},
         {text: "Cancel", style: "cancel"}
       ]
     )
@@ -46,9 +46,11 @@ export default function HomeScreen() {
       <FlatList
         data={books}
         keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle = {styles.row}
         renderItem={({ item }) => (
-          <TouchableOpacity style = {styles.bookItem} onPress={() => handleBookPress(item)}>
-            <View style={styles.bookItem}>
+          <TouchableOpacity style = {styles.bookCard} onPress={() => handleBookPress(item)}>
+            <View>
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style={styles.bookUser}>Listed by {item.user}</Text>
@@ -67,8 +69,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 16
   },
   button: {
     backgroundColor: '#333',
@@ -95,20 +96,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
   },
-  bookItem: {
-    flexDirection: 'column',
+  row: {
+    justifyContent: 'space-between',
+  },
+  bookCard: {
     backgroundColor: '#fff',
     padding: 12,
     borderRadius: 10,
     marginVertical: 8,
-    alignItems: 'center',
+    width: '48%',
+    alignItems: 'right',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+
   bookInfo: {
-    flex: 1,
+    alignItems: 'center',
   },
   bookTitle: {
     fontSize: 16,
