@@ -1,6 +1,8 @@
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAuth, signOut } from "firebase/auth";
+import { FIRESTORE_DB } from '../../firebaseConfig';
+import {collection, addDoc} from "firebase/firestore";
 
 const books = [
   { id: '1', title: 'Book 1', user: 'Sarika'},
@@ -31,9 +33,21 @@ export default function HomeScreen() {
         {text: "Exchange", onPress: () => Alert.alert("Exchange request sent!")},
         {text: "Cancel", style: "cancel"}
       ]
-    )
+    );
 
-  }
+  };
+
+  const handleCreateListing = () => {
+    Alert.alert(
+      "Create a Listing",
+      " ",
+      [
+        {text: "Add book by ISBN", onPress: () => console.log("ISBN Listing")},
+        {text: "Add book by Title and Author", onPress: () => console.log("Normal Listing")},
+        {text: "Cancel", style: "cancel"}
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -60,6 +74,10 @@ export default function HomeScreen() {
           
         )}
       />
+
+      <TouchableOpacity style = {styles.button} onPress={handleCreateListing}>
+        <Text style = {styles.buttonText}>Create a Listing</Text>
+      </TouchableOpacity>
 
     </View>
   );
