@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut} from 'firebase/auth';
 import { app, FIRESTORE_DB } from '../../firebaseConfig';
 import FloatingButton from '../../components/common/FloatingButton';
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from 'expo-router';
 
 
 const ProfileScreen = () => {
@@ -21,6 +22,16 @@ const ProfileScreen = () => {
   const [bookCoverUrl, setBookCoverUrl] = useState("");
   const [books, setBooks] = useState([]);
   const auth = getAuth(app);
+  const router = useRouter();
+
+  const exit = () => {
+      signOut(auth).then(() => {
+        console.log("Logged out");
+      }).catch((error) => {
+        console.log(error);
+      });
+      router.replace("/");
+    };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
@@ -255,7 +266,10 @@ const ProfileScreen = () => {
             </View>
           </View>
         </View>
-      </Modal >
+      </Modal>
+      <TouchableOpacity style={styles.button} onPress={exit}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -264,6 +278,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  button: {
+    backgroundColor: '#333',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    margin: 16
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   profileArea: {
     alignItems: 'center',

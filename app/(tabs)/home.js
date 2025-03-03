@@ -6,7 +6,6 @@ import { FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot} from "firebase/firestore";
 
 export default function HomeScreen() {
-  const router = useRouter();
   const auth = getAuth();
 
   const db = FIRESTORE_DB;
@@ -23,15 +22,6 @@ export default function HomeScreen() {
     });
     return () => unsubscribe();
   }, []);
-
-  const exit = () => {
-    signOut(auth).then(() => {
-      console.log("Logged out");
-    }).catch((error) => {
-      console.log(error);
-    });
-    router.replace("/");
-  };
 
   const handleBookPress = (book) => {
     Alert.alert(
@@ -84,10 +74,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={exit}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-
       <Text style={styles.heading}>Books Available for Listing</Text>
 
       <FlatList

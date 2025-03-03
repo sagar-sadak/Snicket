@@ -36,15 +36,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="TodoScreen"
-        options={{
-          title: 'To Do',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'today-sharp' : 'today-outline'} color={color} size={24}/>
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
