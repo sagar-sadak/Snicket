@@ -132,7 +132,7 @@ export default function HomeScreen() {
             <TouchableOpacity style= {styles.modalButton} onPress={addBookToFirestore}>
             <Text style= {styles.modalButtonText}>Add Listing</Text>
             </TouchableOpacity>
-            <TouchableOpacity style = {styles.modalCloseButton} onPress={()=> setModalVisible(false)}>
+            <TouchableOpacity style = {styles.modalButton} onPress={()=> setModalVisible(false)}>
             <Text style= {styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>            
           </View>
