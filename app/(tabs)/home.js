@@ -1,16 +1,9 @@
 import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAuth, signOut } from "firebase/auth";
 import { FIRESTORE_DB } from '../../firebaseConfig';
-import {collection, addDoc} from "firebase/firestore";
-
-const books = [
-  { id: '1', title: 'Book 1', user: 'Sarika'},
-  { id: '2', title: 'Book 2', user: 'Nitin' },
-  { id: '3', title: 'Book 3', user: 'Sagar'},
-];
-
+import {collection, addDoc, onSnapshot} from "firebase/firestore";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,6 +14,15 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [books, setBooks] = useState([]);
+
+  useEffect( () => {
+    const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
+      const bookList = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+      setBooks(bookList);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const exit = () => {
     signOut(auth).then(() => {
@@ -48,7 +50,7 @@ export default function HomeScreen() {
       "Create a Listing",
       " ",
       [
-        {text: "Add book by ISBN", onPress: () => console.log("ISBN Listing")},
+        {text: "Add book by ISBN", onPress: () => Alert.alert("Functionality coming soon.")},
         {text: "Add book by Title and Author", onPress: () => setModalVisible(true)},
         {text: "Cancel", style: "cancel"}
       ]
@@ -65,7 +67,7 @@ export default function HomeScreen() {
         title, 
         author, 
         listedBy: user?.uid,
-        listedByName: user?.displayName || "Unknown",
+        listedByEmail: user?.email || "Unknown",
         timestamp: new Date(),
 
       });
@@ -98,7 +100,8 @@ export default function HomeScreen() {
             <View>
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
-              <Text style={styles.bookUser}>Listed by {item.user}</Text>
+              <Text style ={styles.bookUser}>{item.author}</Text>
+              <Text style={styles.bookUser}>Listed by {item.listedByEmail}</Text>
             </View>
           </View>
           </TouchableOpacity>
@@ -186,7 +189,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-
   bookInfo: {
     alignItems: 'center',
   },
