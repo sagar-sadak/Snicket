@@ -31,7 +31,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      // await signInWithEmailAndPassword(auth, username, password);
+      await signInWithEmailAndPassword(auth, username, password);
       router.replace("(tabs)/home");
     } catch (error) {
       setMessage("Invalid Credentials");

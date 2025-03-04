@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
-import { getAuth, signOut} from 'firebase/auth';
-import { app, FIRESTORE_DB } from '../../firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { FIRESTORE_DB, auth } from '../../firebaseConfig';
 import FloatingButton from '../../components/common/FloatingButton';
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, addDoc, collection } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from 'expo-router';
 
@@ -11,7 +11,8 @@ import { useRouter } from 'expo-router';
 const ProfileScreen = () => {
   const [email, setEmail] = useState('');
   const [user, setUser] = useState(null)
-  const [modalVisible, setModalVisible] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [bookModalVisible, setBookModalVisible] = useState(false);
   const [bookDetailsVisible, setBookDetailsVisible] = useState(false);
   const [isbn, setIsbn] = useState('');
   const [error, setError] = useState('');
@@ -21,22 +22,25 @@ const ProfileScreen = () => {
   const [bookAuthor, setBookAuthor] = useState("");
   const [bookCoverUrl, setBookCoverUrl] = useState("");
   const [books, setBooks] = useState([]);
-  const auth = getAuth(app);
+  const [selectedBook, setSelectedBook] = useState(null);
   const router = useRouter();
 
   const exit = () => {
-      signOut(auth).then(() => {
-        console.log("Logged out");
-      }).catch((error) => {
-        console.log(error);
-      });
-      router.replace("/");
-    };
+    signOut(auth).then(() => {
+      console.log("Logged out");
+    }).catch((error) => {
+      console.log(error);
+    });
+    router.replace("/");
+  };
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
     const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
+      console.log("Auth state changed:", loggedInUser ? "User present" : "No user");
       if (loggedInUser) {
-        console.log("User detected:", loggedInUser.email);
+        console.log("User ID:", loggedInUser.uid);
+        console.log("User email:", loggedInUser.email);
         setEmail(loggedInUser.email);
         setUser(loggedInUser);
       } else {
@@ -45,7 +49,10 @@ const ProfileScreen = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log("Cleaning up auth state listener");
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -68,7 +75,7 @@ const ProfileScreen = () => {
     }
   };
 
-  const getDocument = async () => {
+  const getProfileDocument = async () => {
     try {
       console.log("Getting user document", user)
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
@@ -91,7 +98,7 @@ const ProfileScreen = () => {
     try {
       console.log("getting books");
       const processedItems = [];
-      const querySnapshot = await getDocument();
+      const querySnapshot = await getProfileDocument();
       console.log("qeurysnapshot", querySnapshot)
 
       if (querySnapshot && Array.isArray(querySnapshot["library"])) {
@@ -108,7 +115,7 @@ const ProfileScreen = () => {
   };
 
   const handleFloatingButtonPress = () => {
-    setModalVisible(true);
+    setAddModalVisible(true);
   };
 
   const handleSearchSelection = async () => {
@@ -128,7 +135,7 @@ const ProfileScreen = () => {
         const book = data[`ISBN:${isbn}`];
         setBookTitle(book.title || 'Title not available');
         const authors = book.authors ? book.authors.map(author => author.name).join(', ') : 'Author not available';
-        const coverUrl = book.cover ? book.cover.small : 'Cover not available';
+        const coverUrl = book.cover ? book.cover.small : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT58P55blSKZmf2_LdBoU7jETl6OiB2sjYy9A&s';
         setBookAuthor(authors);
         setBookCoverUrl(coverUrl);
         setBookDetailsVisible(true);
@@ -152,7 +159,7 @@ const ProfileScreen = () => {
     setBookDetailsVisible(false);
     setError('');
     setIsbn('');
-    setModalVisible(false);
+    setAddModalVisible(false);
   };
 
   const addBook = async (userId, isbn, authors, title, coverUrl) => {
@@ -183,6 +190,56 @@ const ProfileScreen = () => {
     }
   };
 
+  const openBookModal = (book) => {
+    setSelectedBook(book);
+    setBookModalVisible(true);
+  };
+
+  const closeBookModal = () => {
+    setBookModalVisible(false);
+    setSelectedBook(null);
+  };
+
+  const handleDeleteBook = async () => {
+    console.log("delete called for book", selectedBook);
+
+    try {
+      const updatedBooks = books.filter(book => book.isbn !== selectedBook.isbn);
+
+      setBooks(updatedBooks);
+      const docRef = doc(FIRESTORE_DB, "profile", user.uid);
+      await setDoc(docRef, { "library": updatedBooks });
+
+      alert("Book removed successfully!");
+    } catch (error) {
+      console.error("Error removing book:", error);
+      alert("Failed to remove book. Please try again.");
+    }
+
+    closeBookModal();
+  };
+
+  const handleAddListing = async () => {
+    const title = selectedBook.title
+    const author = selectedBook.authors
+    console.log("add listing called for book", title, author)
+    try {
+      await addDoc(collection(FIRESTORE_DB, "listings"), {
+        title,
+        author,
+        listedBy: user?.uid,
+        listedByEmail: user?.email || "Unknown",
+        timestamp: new Date(),
+
+      });
+      alert("Success", "Book Listed");
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      alert("Error", "Failed to add book");
+    }
+    closeBookModal()
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profileArea}>
@@ -195,25 +252,35 @@ const ProfileScreen = () => {
 
       <View style={styles.booksArea}>
         <Text style={styles.sectionTitle}>My Books</Text>
-        <FlatList
-          data={books}
-          keyExtractor={(item) => item.isbn}
-          renderItem={({ item }) => (
-            <View style={styles.bookItemContainer}>
-              <Image source={{ uri: item.coverUrl }} style={styles.bookCover} />
-              <View style={styles.bookDetails}>
-                <Text style={styles.bookTitle}>{item.title}</Text>
-                <Text style={styles.bookAuthor}>{item.authors}</Text>
-              </View>
-            </View>
+        {fetchError ? (
+          <Text style={styles.errorText}>Failed to fetch book data. Please try again later.</Text>
+        ) :
+          (<FlatList
+            data={books}
+            keyExtractor={(item) => item.isbn}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => openBookModal(item)}>
+                <View style={styles.bookItemContainer}>
+                  <Image source={
+                    item.coverUrl === 'Cover not available'
+                      ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT58P55blSKZmf2_LdBoU7jETl6OiB2sjYy9A&s'
+                      : { uri: item.coverUrl }
+                  } style={styles.bookCover} />
+                  <View style={styles.bookDetails}>
+                    <Text style={styles.bookTitle}>{item.title}</Text>
+                    <Text style={styles.bookAuthor}>{item.authors}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.flatListContent}
+          />
           )}
-          contentContainerStyle={styles.flatListContent}
-        />
       </View>
 
       <FloatingButton onPress={handleFloatingButtonPress} />
       <Modal
-        visible={modalVisible}
+        visible={addModalVisible}
         animationType="slide"
         transparent={true}
         onRequestClose={handleCloseModal}
@@ -267,6 +334,29 @@ const ProfileScreen = () => {
           </View>
         </View>
       </Modal>
+
+      <Modal visible={bookModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{selectedBook?.title}</Text>
+            <View style={styles.bookModalButtonContainer}>
+              <TouchableOpacity onPress={handleDeleteBook} style={styles.deleteButton}>
+                <Text style={styles.deleteButtonText}>Delete Book</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={handleAddListing} style={styles.confirmButton}>
+                <Text style={styles.confirmButtonText}>Add as Listing</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={closeBookModal} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+
       <TouchableOpacity style={styles.button} onPress={exit}>
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
@@ -349,6 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
   },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15 },
   input: {
     height: 40,
     borderColor: 'gray',
@@ -378,10 +469,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  deleteButton: {
+    backgroundColor: '#FF0000',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+  },
+  bookModalButtonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    // width: '70%',
   },
   buttonDisabled: {
     backgroundColor: '#A0A0A0',
@@ -427,6 +533,10 @@ const styles = StyleSheet.create({
   bookAuthor: {
     fontSize: 14,
     color: '#666',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 
