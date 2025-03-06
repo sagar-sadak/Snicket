@@ -36,6 +36,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="MessageScreen"
+        options={{
+          title: 'Messages',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} color={color} size={24}/>
+          )
+        }}
+      />
+      <Tabs.Screen
+        name="ChatScreen"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} size={24}/>
+          )
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
