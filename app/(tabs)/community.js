@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { FIRESTORE_DB } from '../../firebaseConfig'
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Card, Avatar, IconButton } from 'react-native-paper';
 
 export default function SocialFeedScreen() {
@@ -10,6 +10,18 @@ export default function SocialFeedScreen() {
     { id: '1', name: 'John Doe', avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: 'I just finished reading "A Series of Unfortunate Events" and it was soooo good!!', likes: 12, dislikes: 1 },
     { id: '2', name: 'Jane Smith', avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: 'I like books!', likes: 30, dislikes: 2 }
   ]);
+
+  const getPosts = async (collectionName) => {
+    try {
+      const snapshot = await getDocs(collection(FIRESTORE_DB, 'community'));
+      const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // console.log('Documents:', documents);
+      setPosts(documents);
+    } catch (error) {
+      console.error('Error fetching documents: ', error);
+      return [];
+    }
+  };
 
   const handlePost = () => {
     if (postText.trim().length > 0) {
@@ -36,6 +48,13 @@ export default function SocialFeedScreen() {
       return post;
     }));
   };
+
+  useEffect(() => {
+    getPosts('your_collection_name')
+      .then(collectionData => {
+        console.log('Collection data:', collectionData);
+      });
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
