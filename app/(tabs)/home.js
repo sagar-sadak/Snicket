@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getAuth, signOut } from "firebase/auth";
 import { FIRESTORE_DB } from '../../firebaseConfig';
-import {collection, addDoc, onSnapshot} from "firebase/firestore";
+import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -24,6 +24,16 @@ export default function HomeScreen() {
   }, []);
 
   const handleBookPress = (book) => {
+    if (book.listedByEmail ===user?.email){
+      Alert.alert(
+        "Delete this listing?",
+        "Are you sure you wanna remove this book?",
+        [
+          {text: "Yes, Delete", onPress: ()=> deleteListing(book.id)},
+          {text: "Cancel", style: "cancel"}
+        ]
+      );
+    } else {
     Alert.alert(
       book.title,
       "Choose an option:",
@@ -33,6 +43,7 @@ export default function HomeScreen() {
         {text: "Cancel", style: "cancel"}
       ]
     );
+  }
   };
 
   const handleCreateListing = () => {
@@ -71,6 +82,15 @@ export default function HomeScreen() {
 
     }
   };
+  const deleteListing = async (bookId) => {
+    try {
+      await deleteDoc(doc(db, "listings", bookId)); 
+      Alert.alert("Success!", "Listing deleted.");
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      Alert.alert("Error", "Failed to delete listing.");
+    }
+  }
 
   return (
     <View style={styles.container}>
