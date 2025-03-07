@@ -81,18 +81,20 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle = {styles.row}
-        renderItem={({ item }) => (
-          <TouchableOpacity style = {styles.bookCard} onPress={() => handleBookPress(item)}>
+        renderItem={({ item }) => {
+          const isUserBook = item.listedByEmail == user?.email; 
+          return (
+          <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
             <View>
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style ={styles.bookUser}>{item.author}</Text>
-              <Text style={styles.bookUser}>Listed by {item.listedByEmail}</Text>
+              <Text style={styles.bookUser}>{isUserBook ? "Your Listing" : `Listed by: ${item.listedByEmail}`}</Text>
             </View>
           </View>
           </TouchableOpacity>
           
-        )}
+        )}}
       />
 
       <TouchableOpacity style = {styles.button} onPress={handleCreateListing}>
@@ -220,5 +222,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
-  }
+  },
+  userBookCard: {
+    backgroundColor: '#d4edda', // Light green background for user's listings
+    borderColor: '#155724',
+    borderWidth: 1,
+  },
 });
