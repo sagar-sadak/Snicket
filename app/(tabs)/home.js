@@ -1,8 +1,8 @@
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { getAuth, signOut } from "firebase/auth";
-import { FIRESTORE_DB } from '../../firebaseConfig';
+import { getAuth } from "firebase/auth";
+import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
 
 export default function HomeScreen() {
@@ -14,6 +14,7 @@ export default function HomeScreen() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [books, setBooks] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
 
   useEffect( () => {
     const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
@@ -58,15 +59,53 @@ export default function HomeScreen() {
     );
   };
 
-  const addBookToFirestore = async () => {
+  const fetchBookFromAPI = async () => {
+    
+    if (!title) {
+      Alert.alert("Error", "Please enter both title and author");
+      return; 
+    }
+    // const query = `${title} ${author}`;
+    const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&author_name=${encodeURIComponent(author)}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log('API Query result',data.docs[0])
+
+      if (data.docs && data.docs.length >0){
+        const book = data.docs[0];
+        const bookDetails = {
+          title: book.title,
+          author: book.author_name ? book.author_name.join(", ") : "Unknown",
+          coverUrl: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : null,
+        };
+        setSearchResults([bookDetails]);
+      } else {
+        Alert.alert("No results.", "No books found.");
+      }
+
+    } catch (error){
+      console.error(error);
+      Alert.alert("Failed to fetch book data");
+    }
+  }
+
+  const addBookToFirestore = async () => { 
+    console.log("Adding to firestore: ", title) 
     if (!title || !author){
+      
+      console.log(author)
       Alert.alert("Error", "Please enter both title and author.");
       return; 
     }
+    
     try {
+      const book = searchResults[0];
       await addDoc(collection(db, "listings"), {
-        title, 
-        author, 
+        title: book.title, 
+        author: book.author, 
+        coverUrl: book.coverUrl,
         listedBy: user?.uid,
         listedByEmail: user?.email || "Unknown",
         timestamp: new Date(),
@@ -76,6 +115,7 @@ export default function HomeScreen() {
       setTitle('');
       setAuthor('');
       setModalVisible(false);
+      setSearchResults([]);
     } catch (error){
       console.error("Error adding document: ", error);
       Alert.alert("Error", "Failed to add book");
@@ -106,6 +146,7 @@ export default function HomeScreen() {
           return (
           <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
             <View>
+              {item.coverUrl && <Image source={{uri: item.coverUrl}} style={styles.bookCover} />}
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style ={styles.bookUser}>{item.author}</Text>
@@ -137,9 +178,26 @@ export default function HomeScreen() {
             value= {author}
             onChangeText={setAuthor}
             />
-            <TouchableOpacity style= {styles.modalButton} onPress={addBookToFirestore}>
-            <Text style= {styles.modalButtonText}>Add Listing</Text>
+            <TouchableOpacity style= {styles.modalButton} onPress={fetchBookFromAPI}>
+              <Text style= {styles.modalButtonText}>Search for Book</Text>
             </TouchableOpacity>
+            {searchResults.length > 0 && ( 
+              <View style={styles.searchResultContainer}>
+                {searchResults.map((book,index) => (
+                  <View key={index} style={styles.bookCard}>
+                    {book.coverUrl && <Image source={{ uri: book.coverUrl }} style={styles.bookCover} />}
+                    <Text style={styles.bookTitle}>{book.title}</Text>
+                    <Text style={styles.bookUser}>{book.author}</Text>
+                    <TouchableOpacity style={styles.modalButton} onPress={addBookToFirestore}>
+                      <Text style = {styles.modalButtonText}>Add Listing</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}                
+              </View>
+            )}
+            {/* <TouchableOpacity style= {styles.modalButton} onPress={addBookToFirestore}>
+            <Text style= {styles.modalButtonText}>Add Listing</Text>
+            </TouchableOpacity> */}
             <TouchableOpacity style = {styles.modalButton} onPress={()=> setModalVisible(false)}>
             <Text style= {styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>            
@@ -197,6 +255,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  bookCover: {
+    width: 100,
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 8,
+  },
   bookInfo: {
     alignItems: 'center',
   },
@@ -247,5 +311,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#d4edda', // Light green background for user's listings
     borderColor: '#155724',
     borderWidth: 1,
+  },
+  searchResultContainer: {
+    marginTop: 10,
   },
 });
