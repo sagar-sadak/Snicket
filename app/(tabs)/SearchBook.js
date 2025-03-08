@@ -48,7 +48,7 @@ const SearchBook = ({onSelectBook}) => {
         <View>
             <TextInput
             style = {{ padding: 10, borderWidth: 1, marginBottom: 10 }}
-            placeholder="Type book title and author..."
+            placeholder="Type book title or author..."
             value= {query}
             onChangeText={setQuery}
             />
