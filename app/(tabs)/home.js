@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAuth } from "firebase/auth";
 import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
+import SearchBook from './SearchBook';
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -11,10 +12,11 @@ export default function HomeScreen() {
   const db = FIRESTORE_DB;
   const user = auth.currentUser;
   const [modalVisible, setModalVisible] = useState(false);
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
+  // const [title, setTitle] = useState('');
+  // const [author, setAuthor] = useState('');
   const [books, setBooks] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  // const [searchResults, setSearchResults] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
 
   useEffect( () => {
     const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
@@ -48,79 +50,100 @@ export default function HomeScreen() {
   };
 
   const handleCreateListing = () => {
-    Alert.alert(
-      "Create a Listing",
-      " ",
-      [
-        {text: "Add book by ISBN", onPress: () => Alert.alert("Functionality coming soon.")},
-        {text: "Add book by Title and Author", onPress: () => setModalVisible(true)},
-        {text: "Cancel", style: "cancel"}
-      ]
-    );
+    setModalVisible(true)
+    // Alert.alert(
+    //   "Create a Listing",
+    //   " ",
+    //   [
+    //     {text: "Add book by ISBN", onPress: () => Alert.alert("Functionality coming soon.")},
+    //     {text: "Add book by Title and Author", onPress: () => setModalVisible(true)},
+    //     {text: "Cancel", style: "cancel"}
+    //   ]
+    // );
   };
 
-  const fetchBookFromAPI = async () => {
+  // const fetchBookFromAPI = async () => {
     
-    if (!title) {
-      Alert.alert("Error", "Please enter both title and author");
-      return; 
-    }
-    // const query = `${title} ${author}`;
-    const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&author_name=${encodeURIComponent(author)}`;
+  //   if (!title) {
+  //     Alert.alert("Error", "Please enter both title and author");
+  //     return; 
+  //   }
+  //   // const query = `${title} ${author}`;
+  //   const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&author_name=${encodeURIComponent(author)}`;
 
+  //   try {
+  //     const response = await fetch(url);
+  //     const data = await response.json();
+  //     console.log('API Query result',data.docs[0])
+
+  //     if (data.docs && data.docs.length >0){
+  //       const book = data.docs[0];
+  //       const bookDetails = {
+  //         title: book.title,
+  //         author: book.author_name ? book.author_name.join(", ") : "Unknown",
+  //         coverUrl: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : null,
+  //       };
+  //       setSearchResults([bookDetails]);
+  //     } else {
+  //       Alert.alert("No results.", "No books found.");
+  //     }
+
+  //   } catch (error){
+  //     console.error(error);
+  //     Alert.alert("Failed to fetch book data");
+  //   }
+  // }
+
+  const addBookToFirestore = async () => {
+    if (!selectedBook){
+      Alert.alert("Error", "No book selected.");
+      return;
+    } 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-      console.log('API Query result',data.docs[0])
-
-      if (data.docs && data.docs.length >0){
-        const book = data.docs[0];
-        const bookDetails = {
-          title: book.title,
-          author: book.author_name ? book.author_name.join(", ") : "Unknown",
-          coverUrl: book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : null,
-        };
-        setSearchResults([bookDetails]);
-      } else {
-        Alert.alert("No results.", "No books found.");
-      }
-
+      await addDoc(collection(db, 'listings'), {
+        title: selectedBook.title,
+        author: selectedBook.author,
+        coverUrl: selectedBook.coverUrl,
+        listedByEmail: user?.email || "Unknown",
+        listedBy: user?.uid,
+        timestamp: new Date(),
+      });
+      Alert.alert("Success!", "Book Listed");
+      setModalVisible(false);
+      setSelectedBook(null);
     } catch (error){
       console.error(error);
-      Alert.alert("Failed to fetch book data");
-    }
-  }
-
-  const addBookToFirestore = async () => { 
-    console.log("Adding to firestore: ", title) 
-    if (!title || !author){
-      
-      console.log(author)
-      Alert.alert("Error", "Please enter both title and author.");
-      return; 
+      Alert.alert("Error", "Failed to add book.");
     }
     
-    try {
-      const book = searchResults[0];
-      await addDoc(collection(db, "listings"), {
-        title: book.title, 
-        author: book.author, 
-        coverUrl: book.coverUrl,
-        listedBy: user?.uid,
-        listedByEmail: user?.email || "Unknown",
-        timestamp: new Date(),
+    // if (!title || !author){
+      
+    //   console.log(author)
+    //   Alert.alert("Error", "Please enter both title and author.");
+    //   return; 
+    // }
+    
+    // try {
+    //   const book = searchResults[0];
+    //   await addDoc(collection(db, "listings"), {
+    //     title: book.title, 
+    //     author: book.author, 
+    //     coverUrl: book.coverUrl,
+    //     listedBy: user?.uid,
+    //     listedByEmail: user?.email || "Unknown",
+    //     timestamp: new Date(),
 
-      });
-      Alert.alert("Success,", "Book Listed");
-      setTitle('');
-      setAuthor('');
-      setModalVisible(false);
-      setSearchResults([]);
-    } catch (error){
-      console.error("Error adding document: ", error);
-      Alert.alert("Error", "Failed to add book");
+    //   });
+    //   Alert.alert("Success,", "Book Listed");
+    //   setTitle('');
+    //   setAuthor('');
+    //   setModalVisible(false);
+    //   setSearchResults([]);
+    // } catch (error){
+    //   console.error("Error adding document: ", error);
+    //   Alert.alert("Error", "Failed to add book");
 
-    }
+    // }
   };
   const deleteListing = async (bookId) => {
     try {
@@ -165,8 +188,20 @@ export default function HomeScreen() {
       <Modal visible = {modalVisible} animationType='slide' transparent>
         <View style = {styles.modalContainer}>
           <View style = {styles.modalContent}>
-            <Text style = {styles.modalTitle}>Type Book Title and Author</Text>
-            <TextInput
+            <Text style = {styles.modalTitle}>Search for a Book</Text>
+            <SearchBook onSelectBook={(book) => setSelectedBook(book)}/>
+            {selectedBook && (
+              <View style= {styles.bookCard}>
+                {selectedBook.coverUrl && <Image source={{ uri: selectedBook.coverUrl }} style={styles.bookCover}/>}
+                <Text style={styles.bookTitle}>{selectedBook.title}</Text>
+                <Text style={styles.bookUser}>{selectedBook.author}</Text>
+                <TouchableOpacity style={styles.modalButton} onPress={addBookToFirestore}>
+                <Text style={styles.modalButtonText}>Click to list this book</Text>
+                </TouchableOpacity>
+
+              </View>
+            )}
+            {/* <TextInput
             style = {styles.input}
             placeholder='Book Title'
             value={title}
@@ -194,10 +229,7 @@ export default function HomeScreen() {
                   </View>
                 ))}                
               </View>
-            )}
-            {/* <TouchableOpacity style= {styles.modalButton} onPress={addBookToFirestore}>
-            <Text style= {styles.modalButtonText}>Add Listing</Text>
-            </TouchableOpacity> */}
+            )} */}
             <TouchableOpacity style = {styles.modalButton} onPress={()=> setModalVisible(false)}>
             <Text style= {styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>            
@@ -312,7 +344,7 @@ const styles = StyleSheet.create({
     borderColor: '#155724',
     borderWidth: 1,
   },
-  searchResultContainer: {
-    marginTop: 10,
-  },
+  // searchResultContainer: {
+  //   marginTop: 10,
+  // },
 });
