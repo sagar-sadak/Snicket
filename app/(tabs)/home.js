@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAuth } from "firebase/auth";
 import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
-import SearchBook from './SearchBook';
+import SearchBook from '../SearchBook';
 
 export default function HomeScreen() {
   const auth = getAuth();
