@@ -32,7 +32,7 @@ const SearchBook = ({onSelectBook}) => {
 
         } catch (error){
             console.error(error);
-            Alert.alert("Error", "Failed to fetch book data");
+            // Alert.alert("Error", "Failed to fetch book data");
 
         }
     };
@@ -40,7 +40,7 @@ const SearchBook = ({onSelectBook}) => {
     useEffect( () => {
         const timeoutId = setTimeout( () => {
             fetchBookFromAPI(query);
-        }, 50);
+        }, 100);
         return () => clearTimeout(timeoutId);
     }, [query]);
 

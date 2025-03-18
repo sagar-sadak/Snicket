@@ -1,9 +1,9 @@
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal, Image } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, Modal, Image } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAuth } from "firebase/auth";
 import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
-import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
+import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "firebase/firestore";
 import SearchBook from '../SearchBook';
 import Ionicons from '@expo/vector-icons/Ionicons'
 
@@ -17,15 +17,45 @@ export default function HomeScreen() {
   const [selectedBook, setSelectedBook] = useState(null);
   const router = useRouter();
 
+  // useEffect( () => {
+  //   const unsubscribe = onSnapshot(collection(db, "books"), (snapshot) => {
+  //     const bookList = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+  //     setBooks(bookList);
+  //   });
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect( () => {
-    const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
-      const bookList = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-      setBooks(bookList);
+    const unsubscribe = onSnapshot(collection(db, 'books'), async (snapshot) => {
+      const allListings = [];
+
+      snapshot.docs.forEach((bookDoc) => {
+        const bookData = bookDoc.data();
+        const listingRef = collection(bookDoc.ref, 'listings');
+
+        const listingUnsubscribe = onSnapshot(listingRef, (listingSnapshot) => {
+          listingSnapshot.docs.forEach((listingDoc) => {
+            const listingData = listingDoc.data();
+            allListings.push({
+            id: listingDoc.id, // Unique ID for the listing
+            bookId: bookDoc.id, // Reference to the book (title)
+            title: bookData.title,
+            author: bookData.author,
+            coverUrl: bookData.coverUrl,
+            listedByEmail: listingData.listedByEmail,
+            listedBy: listingData.listedBy,
+            timestamp: listingData.timestamp,
+            });
+            setBooks(allListings);
+
+          });
+        });
+        return () => listingUnsubscribe();
+      })  ;   
+      
     });
     return () => unsubscribe();
   }, []);
-
-
 
   const handleBookPress = (book) => {
     if (book.listedByEmail ===user?.email){
@@ -57,28 +87,55 @@ export default function HomeScreen() {
 
   const addBookToFirestore = async () => {
     if (!selectedBook){
-      Alert.alert("Error", "No book selected.");
-      return;
-    } 
-    try {
-      await addDoc(collection(db, 'listings'), {
-        title: selectedBook.title,
+          Alert.alert("Error", "No book selected.");
+          return;
+        }
+    try {      
+      const bookRef = doc(db, 'books', selectedBook.title);
+      await setDoc(bookRef, {
         author: selectedBook.author,
-        coverUrl: selectedBook.coverUrl,
-        listedByEmail: user?.email || "Unknown",
-        listedBy: user?.uid,
+        coverUrl: selectedBook.coverUrl },
+        {merge:true});
+
+      const listingRef = collection(bookRef, 'listings');
+      await addDoc(listingRef, {
+        listedByEmail: user?.email || 'Unknown',
+        listedBy: user?.uid || 'Unknown',
         timestamp: new Date(),
       });
-      Alert.alert("Success!", "Book Listed");
+      Alert.alert("Success!", "Book Listed")
       setModalVisible(false);
       setSelectedBook(null);
-    } catch (error){
+    } 
+    catch (error){
       console.error(error);
-      Alert.alert("Error", "Failed to add book.");
+      Alert.alert("Error", "Failed to add book")
     }
-    
+  }
 
-  };
+  // const addBookToFirestore = async () => {
+  //   if (!selectedBook){
+  //     Alert.alert("Error", "No book selected.");
+  //     return;
+  //   } 
+  //   try {
+  //     await addDoc(collection(db, 'listings'), {
+  //       title: selectedBook.title,
+  //       author: selectedBook.author,
+  //       coverUrl: selectedBook.coverUrl,
+  //       listedByEmail: user?.email || "Unknown",
+  //       listedBy: user?.uid,
+  //       timestamp: new Date(),
+  //     });
+  //     Alert.alert("Success!", "Book Listed");
+  //     setModalVisible(false);
+  //     setSelectedBook(null);
+  //   } catch (error){
+  //     console.error(error);
+  //     Alert.alert("Error", "Failed to add book.");
+  //   }
+  // };
+
   const deleteListing = async (bookId) => {
     try {
       await deleteDoc(doc(db, "listings", bookId)); 
