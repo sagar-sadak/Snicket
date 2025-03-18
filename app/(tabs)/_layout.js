@@ -14,15 +14,16 @@ export default function TabLayout() {
           headerTintColor: '#fff',
           tabBarStyle: {
           backgroundColor: '#25292e',
+          
           },
         }}
       >
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'planet-sharp' : 'planet-outline'} color={color} size={24} />
           ),
         }}
       />
@@ -35,7 +36,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="MessageScreen"
         options={{
           title: 'Messages',
@@ -43,8 +44,8 @@ export default function TabLayout() {
             <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} color={color} size={24}/>
           )
         }}
-      />
-      <Tabs.Screen
+      /> */}
+      {/* <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -52,7 +53,7 @@ export default function TabLayout() {
             <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={24}/>
           ),
         }}
-      />
+      /> */}
     </Tabs>
   );
 }

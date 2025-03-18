@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
 import { signOut } from 'firebase/auth';
-import { FIRESTORE_DB, auth } from '../../firebaseConfig';
-import FloatingButton from '../../components/common/FloatingButton';
+import { FIRESTORE_DB, auth } from '../firebaseConfig';
+import FloatingButton from '../components/common/FloatingButton';
 import { doc, setDoc, getDoc, addDoc, collection } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from 'expo-router';

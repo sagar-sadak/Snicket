@@ -1,19 +1,21 @@
 import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput, Modal, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useRouter, Stack } from 'expo-router';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { getAuth } from "firebase/auth";
 import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc} from "firebase/firestore";
 import SearchBook from '../SearchBook';
+import Ionicons from '@expo/vector-icons/Ionicons'
+
 
 export default function HomeScreen() {
   const auth = getAuth();
-
   const db = FIRESTORE_DB;
   const user = auth.currentUser;
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+  const router = useRouter();
 
   useEffect( () => {
     const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
@@ -22,6 +24,8 @@ export default function HomeScreen() {
     });
     return () => unsubscribe();
   }, []);
+
+
 
   const handleBookPress = (book) => {
     if (book.listedByEmail ===user?.email){
@@ -86,8 +90,28 @@ export default function HomeScreen() {
   }
 
   return (
+    <>
+    <Stack.Screen
+    options={{
+      title: "Explore Listings",
+      headerStyle: {backgroundColor: "#25292e"},
+      headerTintColor: "#fff",
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.push("/profile")} style={{ marginLeft: 25 }}>
+          <Ionicons name="person-circle-outline" size={28} color="white" />
+        </TouchableOpacity>
+      ), 
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push("/MessageScreen")} style={{ marginRight: 25 }}>
+          <Ionicons name="chatbubbles-outline" size={28} color="white" />
+        </TouchableOpacity>
+      ), 
+
+    }}
+    />
     <View style={styles.container}>
-      <Text style={styles.heading}>Books Available for Listing</Text>
+      {/* <Text style={styles.heading}>Books Available for Listing</Text> */}
 
       <FlatList
         data={[...books].sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate())}
@@ -140,6 +164,7 @@ export default function HomeScreen() {
       </Modal>
 
     </View>
+    </>
   );
 }
 
