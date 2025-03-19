@@ -17,42 +17,33 @@ export default function HomeScreen() {
   const [selectedBook, setSelectedBook] = useState(null);
   const router = useRouter();
 
-  // useEffect( () => {
-  //   const unsubscribe = onSnapshot(collection(db, "books"), (snapshot) => {
-  //     const bookList = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-  //     setBooks(bookList);
-  //   });
-  //   return () => unsubscribe();
-  // }, []);
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'books'), (snapshot) => {
+      let allListings = [];
 
-  useEffect( () => {
-    const unsubscribe = onSnapshot(collection(db, 'books'), async (snapshot) => {
-      const allListings = [];
-
-      snapshot.docs.forEach((bookDoc) => {
+      const bookUnsubscribe = snapshot.docs.map((bookDoc) =>{
         const bookData = bookDoc.data();
         const listingRef = collection(bookDoc.ref, 'listings');
 
-        const listingUnsubscribe = onSnapshot(listingRef, (listingSnapshot) => {
-          listingSnapshot.docs.forEach((listingDoc) => {
-            const listingData = listingDoc.data();
-            allListings.push({
-            id: listingDoc.id, // Unique ID for the listing
+        return onSnapshot(listingRef, (listingSnapshot) => {
+          allListings = listingSnapshot.docs.map((listingDoc) => ({
+            id: listingDoc.id, // Unique listing ID
             bookId: bookDoc.id, // Reference to the book (title)
             title: bookData.title,
             author: bookData.author,
             coverUrl: bookData.coverUrl,
-            listedByEmail: listingData.listedByEmail,
-            listedBy: listingData.listedBy,
-            timestamp: listingData.timestamp,
-            });
-            setBooks(allListings);
-
-          });
+            listedByEmail: listingDoc.data().listedByEmail,
+            listedBy: listingDoc.data().listedBy,
+            timestamp: listingDoc.data().timestamp,
+          }));
+          setBooks(allListings);
         });
-        return () => listingUnsubscribe();
-      })  ;   
-      
+      });
+      return () => {
+        unsubscribe();
+        bookUnsubscribe.forEach((unsub) => unsub());
+      };
+
     });
     return () => unsubscribe();
   }, []);
@@ -61,9 +52,9 @@ export default function HomeScreen() {
     if (book.listedByEmail ===user?.email){
       Alert.alert(
         "Delete this listing?",
-        "Are you sure you wanna remove this book?",
+        "Are you sure you want to remove this book?",
         [
-          {text: "Yes, Delete", onPress: ()=> deleteListing(book.id)},
+          {text: "Yes, Delete", onPress: ()=> deleteListing(book.bookId, book.id)},
           {text: "Cancel", style: "cancel"}
         ]
       );
@@ -113,32 +104,12 @@ export default function HomeScreen() {
     }
   }
 
-  // const addBookToFirestore = async () => {
-  //   if (!selectedBook){
-  //     Alert.alert("Error", "No book selected.");
-  //     return;
-  //   } 
-  //   try {
-  //     await addDoc(collection(db, 'listings'), {
-  //       title: selectedBook.title,
-  //       author: selectedBook.author,
-  //       coverUrl: selectedBook.coverUrl,
-  //       listedByEmail: user?.email || "Unknown",
-  //       listedBy: user?.uid,
-  //       timestamp: new Date(),
-  //     });
-  //     Alert.alert("Success!", "Book Listed");
-  //     setModalVisible(false);
-  //     setSelectedBook(null);
-  //   } catch (error){
-  //     console.error(error);
-  //     Alert.alert("Error", "Failed to add book.");
-  //   }
-  // };
-
-  const deleteListing = async (bookId) => {
+  const deleteListing = async ( bookTitle, listingId) => {
+    
     try {
-      await deleteDoc(doc(db, "listings", bookId)); 
+      
+      const listingRef = doc(db, "books", bookTitle, "listings", listingId)
+      await deleteDoc(listingRef); 
       Alert.alert("Success!", "Listing deleted.");
     } catch (error) {
       console.error("Error deleting document:", error);
