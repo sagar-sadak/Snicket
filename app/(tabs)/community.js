@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { View, SafeAreaView, ScrollView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { FIRESTORE_DB } from '../../firebaseConfig'
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Card, Avatar, IconButton } from 'react-native-paper';
 
 export default function SocialFeedScreen() {
+  const groups = ['General', 'Fiction', 'Non-Fiction', 'Academic'];
+  const [selectedGroup, setSelectedGroup] = useState('General');
   const [postText, setPostText] = useState('');
-  const [posts, setPosts] = useState([
-    { id: '1', name: 'John Doe', avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: 'I just finished reading "A Series of Unfortunate Events" and it was soooo good!!', likes: 12, dislikes: 1 },
-    { id: '2', name: 'Jane Smith', avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: 'I like books!', likes: 30, dislikes: 2 }
-  ]);
+  const [posts, setPosts] = useState([]);
+  const filteredPosts = posts.filter(post => post.group === selectedGroup);
 
-  const getPosts = async (collectionName) => {
+  const getPosts = async () => {
     try {
       const snapshot = await getDocs(collection(FIRESTORE_DB, 'community'));
       const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // console.log('Documents:', documents);
       setPosts(documents);
     } catch (error) {
       console.error('Error fetching documents: ', error);
@@ -25,7 +24,7 @@ export default function SocialFeedScreen() {
 
   const handlePost = () => {
     if (postText.trim().length > 0) {
-        const newPost = { id: Date.now().toString(), name: 'New User', avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0 };
+        const newPost = { id: Date.now().toString(), group: selectedGroup, name: "New User", avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0 };
         setPosts([newPost, ...posts]);
         setPostText('');
         addDoc(collection(FIRESTORE_DB, 'community'), newPost);
@@ -50,15 +49,21 @@ export default function SocialFeedScreen() {
   };
 
   useEffect(() => {
-    getPosts('your_collection_name')
-      .then(collectionData => {
-        console.log('Collection data:', collectionData);
-      });
+    getPosts();
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flexContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupScroll}>
+        <View style={styles.groupContainer}>
+          {groups.map(group => (
+            <TouchableOpacity key={group} onPress={() => setSelectedGroup(group)} style={[styles.groupButton, selectedGroup === group && styles.groupButtonActive]}>
+              <Text style={[styles.groupButtonText, selectedGroup === group && styles.groupButtonTextActive]}>{group}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -73,9 +78,9 @@ export default function SocialFeedScreen() {
             </TouchableOpacity>
         </View>
         </KeyboardAvoidingView>
-          <Text style={styles.subTitle}>Feed</Text>
+        <Text style={styles.subTitle}>{selectedGroup} Feed</Text>
           <FlatList
-            data={posts}
+            data={filteredPosts}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
                 <Card style={styles.card}>
@@ -109,6 +114,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     padding: 16,
     margin: 16,
+  },
+  groupScroll: {
+    margin: 10,
+  },
+  groupContainer: {
+    flexDirection: 'row',
+  },
+  groupButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#ddd',
+    marginRight: 8,
+  },
+  groupButtonActive: {
+    backgroundColor: '#007bff',
+  },
+  groupButtonText: {
+    color: '#333',
+    fontSize: 14,
+  },
+  groupButtonTextActive: {
+    color: '#fff',
   },
   actionsContainer: {
     padding: 0,
@@ -144,6 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    margin: 5,
   },
   subTitle: {
     fontSize: 20,
