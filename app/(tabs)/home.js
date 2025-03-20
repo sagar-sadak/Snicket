@@ -21,20 +21,21 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const unsubscribesMain = onSnapshot(collection(db, 'books'),  (snapshot) => {
-      const allListings = [];
+      let allListings = [];
 
-      snapshot.docs.forEach((bookDoc) =>{
+      const listingUnsubscribe = snapshot.docs.map((bookDoc) =>{
         const bookData = bookDoc.data();
         const bookId = bookDoc.id;
         const listingRef = collection(bookDoc.ref, 'listings');
 
-        const listingUnsubscribe = onSnapshot(listingRef, (listingSnapshop) => {
-          const updatedListings = []
+        return onSnapshot(listingRef, (listingSnapshop) => {
+          allListings = allListings.filter((listing) => listing.bookId !== bookId);
+          // const updatedListings = []
           listingSnapshop.docs.forEach((listingDoc) => {
             
             const listingData = listingDoc.data();
             
-            updatedListings.push({
+            allListings.push({
             id: listingDoc.id, // Unique ID for the listing
             bookId: bookId, // Reference to the book (title)
             title: bookData.title || bookDoc.id, // Fallback to bookId if title is missing
@@ -45,11 +46,12 @@ export default function HomeScreen() {
             timestamp: listingData.timestamp,
             });
           });
-          allListings.push(...updatedListings)
+          // allListings.push(...updatedListings)
           setBooks([...allListings]);
         });
-        return () => listingUnsubscribe();
-      });     
+        // return () => listingUnsubscribe();
+      });   
+      return () => {listingUnsubscribe.forEach((unsubscribe) => unsubscribe());}  
     });
     return () => unsubscribesMain();
   }, []);
