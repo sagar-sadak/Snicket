@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { FIRESTORE_DB } from '../../firebaseConfig'
+import { FIRESTORE_DB } from '../../firebaseConfig';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Card, Avatar, IconButton } from 'react-native-paper';
 

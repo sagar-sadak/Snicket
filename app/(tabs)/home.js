@@ -5,8 +5,8 @@ import { getAuth } from "firebase/auth";
 import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "firebase/firestore";
 import SearchBook from '../SearchBook';
-import Ionicons from '@expo/vector-icons/Ionicons'
-
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -117,6 +117,13 @@ export default function HomeScreen() {
     }
   }
 
+   const report = (item) => {
+    addDoc(collection(FIRESTORE_DB, 'reports'), { user: item.listedByEmail, bookTitle: item.title ? item.title:"Title not found", bookAuthor: item.author ? item.author: "Author not found" });
+    Alert.alert("Post Reported", "We will look into your report and take action accordingly.");
+   };
+   const verified = () => {
+    Alert.alert("Verification Badge", "User has been verified as a GT student");
+   };
   return (
     <>
     <Stack.Screen
@@ -150,6 +157,15 @@ export default function HomeScreen() {
           const isUserBook = item.listedByEmail == user?.email; 
           return (
           <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
+            <View style={styles.iconContainer}>
+              <TouchableOpacity style={styles.reportContainer} onPress={() => report(item)}>
+                <MaterialIcons name="report" size={20} color="red" />
+                <Text style={{color: 'red', fontSize: 12}}>Report post</Text>
+              </TouchableOpacity>
+            { item.listedByEmail.slice(-10) != "gatech.edu" &&
+                <MaterialIcons style={{alignSelf: 'flex-end'}} onPress={verified} name="verified" size={24} color="black" />
+                }
+                </View>
             <View>
               {item.coverUrl && <Image source={{uri: item.coverUrl}} style={styles.bookCover} />}
             <View style={styles.bookInfo}>
@@ -201,6 +217,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
     padding: 16
+  },
+  iconContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  reportContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
   },
   button: {
     backgroundColor: '#333',
@@ -295,7 +323,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   userBookCard: {
-    backgroundColor: '#d4edda', // Light green background for user's listings
+    backgroundColor: '#d4edda',
     borderColor: '#155724',
     borderWidth: 1,
   },
