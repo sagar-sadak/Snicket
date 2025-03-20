@@ -7,6 +7,8 @@ import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "f
 import SearchBook from '../SearchBook';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Timestamp } from "firebase/firestore";
+
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -18,34 +20,38 @@ export default function HomeScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'books'), (snapshot) => {
-      let allListings = [];
+    const unsubscribesMain = onSnapshot(collection(db, 'books'),  (snapshot) => {
+      const allListings = [];
 
-      const bookUnsubscribe = snapshot.docs.map((bookDoc) =>{
+      snapshot.docs.forEach((bookDoc) =>{
         const bookData = bookDoc.data();
+        const bookId = bookDoc.id;
         const listingRef = collection(bookDoc.ref, 'listings');
 
-        return onSnapshot(listingRef, (listingSnapshot) => {
-          allListings = listingSnapshot.docs.map((listingDoc) => ({
-            id: listingDoc.id, // Unique listing ID
-            bookId: bookDoc.id, // Reference to the book (title)
-            title: bookData.title,
+        const listingUnsubscribe = onSnapshot(listingRef, (listingSnapshop) => {
+          const updatedListings = []
+          listingSnapshop.docs.forEach((listingDoc) => {
+            
+            const listingData = listingDoc.data();
+            
+            updatedListings.push({
+            id: listingDoc.id, // Unique ID for the listing
+            bookId: bookId, // Reference to the book (title)
+            title: bookData.title || bookDoc.id, // Fallback to bookId if title is missing
             author: bookData.author,
             coverUrl: bookData.coverUrl,
-            listedByEmail: listingDoc.data().listedByEmail,
-            listedBy: listingDoc.data().listedBy,
-            timestamp: listingDoc.data().timestamp,
-          }));
-          setBooks(allListings);
+            listedByEmail: listingData.listedByEmail,
+            listedBy: listingData.listedBy,
+            timestamp: listingData.timestamp,
+            });
+          });
+          allListings.push(...updatedListings)
+          setBooks([...allListings]);
         });
-      });
-      return () => {
-        unsubscribe();
-        bookUnsubscribe.forEach((unsub) => unsub());
-      };
-
+        return () => listingUnsubscribe();
+      });     
     });
-    return () => unsubscribe();
+    return () => unsubscribesMain();
   }, []);
 
   const handleBookPress = (book) => {
@@ -91,8 +97,8 @@ export default function HomeScreen() {
       const listingRef = collection(bookRef, 'listings');
       await addDoc(listingRef, {
         listedByEmail: user?.email || 'Unknown',
-        listedBy: user?.uid || 'Unknown',
-        timestamp: new Date(),
+        listedBy: user?.uid,
+        timestamp: Timestamp.now(),
       });
       Alert.alert("Success!", "Book Listed")
       setModalVisible(false);
@@ -124,6 +130,8 @@ export default function HomeScreen() {
    const verified = () => {
     Alert.alert("Verification Badge", "User has been verified as a GT student");
    };
+
+  
   return (
     <>
     <Stack.Screen
@@ -145,16 +153,18 @@ export default function HomeScreen() {
 
     }}
     />
+    
     <View style={styles.container}>
-      {/* <Text style={styles.heading}>Books Available for Listing</Text> */}
+      
 
       <FlatList
-        data={[...books].sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate())}
-        keyExtractor={(item) => item.id}
+        data={[...books].sort((a, b) => b.timestamp - a.timestamp)}
+        keyExtractor={(item) => item.id}  
         numColumns={2}
         columnWrapperStyle = {styles.row}
         renderItem={({ item }) => {
-          const isUserBook = item.listedByEmail == user?.email; 
+          const isUserBook = item.listedByEmail === user?.email;
+          
           return (
           <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
             <View style={styles.iconContainer}>

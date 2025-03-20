@@ -11,12 +11,16 @@ const SearchBook = ({onSelectBook}) => {
             setSearchResults([]);
             return;
         }
+        const baseUrl = `https://openlibrary.org/search.json`;
 
-        const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchQuery)}`;
+        const url = `${baseUrl}?title=${encodeURIComponent(searchQuery)}&author=${encodeURIComponent(searchQuery)}&limit=10`;
 
         try {
             const response = await fetch(url);
+            
+            
             const data = await response.json();
+            
 
             if (data.docs && data.docs.length > 0){
                 const books = data.docs.slice(0,10).map(book => ({
@@ -39,8 +43,12 @@ const SearchBook = ({onSelectBook}) => {
 
     useEffect( () => {
         const timeoutId = setTimeout( () => {
-            fetchBookFromAPI(query);
-        }, 100);
+            if (query.length > 2){
+                fetchBookFromAPI(query);
+            } else {
+                setSearchResults([]);
+            }            
+        }, 500);
         return () => clearTimeout(timeoutId);
     }, [query]);
 
