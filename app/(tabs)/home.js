@@ -170,14 +170,15 @@ export default function HomeScreen() {
           return (
           <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
             <View style={styles.iconContainer}>
-              <TouchableOpacity style={styles.reportContainer} onPress={() => report(item)}>
+              {item.listedByEmail !== user?.email && (<TouchableOpacity style={styles.reportContainer} onPress={() => report(item)}>
                 <MaterialIcons name="report" size={20} color="red" />
                 <Text style={{color: 'red', fontSize: 12}}>Report post</Text>
-              </TouchableOpacity>
+              </TouchableOpacity>)}
+              
             { item.listedByEmail.slice(-10) != "gatech.edu" &&
                 <MaterialIcons style={{alignSelf: 'flex-end'}} onPress={verified} name="verified" size={24} color="black" />
                 }
-                </View>
+            </View>
             <View>
               {item.coverUrl && <Image source={{uri: item.coverUrl}} style={styles.bookCover} />}
             <View style={styles.bookInfo}>
