@@ -9,7 +9,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Timestamp } from "firebase/firestore";
 
-
 export default function HomeScreen() {
   const auth = getAuth();
   const db = FIRESTORE_DB;
@@ -56,7 +55,40 @@ export default function HomeScreen() {
     return () => unsubscribesMain();
   }, []);
 
+  const startChat = async (book) => {
+
+    console.log("Starting chat with user: ", book.listedBy);
+
+    try {
+
+      let doc_name = "";
+      if(user.uid.toString() < book.listedBy){
+        doc_name = user.uid.toString()+"_"+book.listedBy;
+      } else{
+        doc_name = book.listedBy+"_"+user.uid.toString();
+      }    
+
+      const UserConversationsRef = doc(db, 'UserConversations', doc_name);
+      await setDoc(UserConversationsRef, {
+        chat_id: doc_name,
+        members: [user.uid.toString(), book.listedBy],
+        first_user: user.uid.toString(),
+        first_user_email: user.email.toString(),
+        second_user: book.listedBy,
+        second_user_email: book.listedByEmail},
+        {merge:true});
+    } 
+    catch (error){
+      console.error(error);
+      Alert.alert("Error", "Failed to Start Chat")
+    }
+
+    router.push("/MessageScreen")
+
+  }
+
   const handleBookPress = (book) => {
+    startChat(book);
     if (book.listedByEmail ===user?.email){
       Alert.alert(
         "Delete this listing?",
@@ -71,7 +103,7 @@ export default function HomeScreen() {
       book.title,
       "Choose an option:",
       [
-        {text: "Borrow", onPress: () => Alert.alert("Borrow request sent!")},
+        {text: "Borrow", onPress: () => startChat(book.listedBy)},
         {text: "Exchange", onPress: () => Alert.alert("Exchange request sent!")},
         {text: "Cancel", style: "cancel"}
       ]

@@ -1,6 +1,9 @@
-import React from 'react';
+import { React, useEffect, useState } from 'react';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { useRouter } from 'expo-router';
-import { View, Text, Button, StyleSheet, FlatList } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import { FIRESTORE_DB } from '../firebaseConfig';
 import {
   Container,
   Card,
@@ -14,66 +17,55 @@ import {
   TextSection,
 } from './styles/MessageStyles';
 
-const Messages = [
-  {
-    id: '1',
-    userName: 'Sarika Singh',
-    messageTime: '4 mins ago',
-    messageText:
-      'Hey there, I am looking to exchange some books.',
-  },
-  {
-    id: '2',
-    userName: 'Sagar Sadak',
-    messageTime: '2 hours ago',
-    messageText:
-      'Hey there, I am looking to exchange some books.',
-  },
-  {
-    id: '3',
-    userName: 'Aditi Agarwal',
-    messageTime: '1 hours ago',
-    messageText:
-      'Hey there, I am looking to exchange some books.',
-  },
-  {
-    id: '4',
-    userName: 'Nitin Chawla',
-    messageTime: '1 day ago',
-    messageText:
-      'Hey there, I am looking to exchange some books.',
-  },
-  {
-    id: '5',
-    userName: 'Guangaya Singh Mamak',
-    messageTime: '2 days ago',
-    messageText:
-      'Hey there, I am looking to exchange some books.',
-  },
-];
-
 const MessagesScreen = ({navigation}) => {
   const router = useRouter();
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const db = FIRESTORE_DB;
+
+  const [conversations, setConversations] = useState([]);
+
+  const getConversations = async () => {
+    
+    try {
+      const conversationRef = collection(db, "UserConversations");
+      const q = query(conversationRef, where("members", "array-contains", user.uid.toString()));
+
+      const snapshot = await getDocs(q);
+      const userConversations = snapshot.docs.map(doc => ({ ...doc.data() }));
+
+      console.log(userConversations[0].chat_id);
+      setConversations(userConversations);
+    } catch (error) {
+      console.error('Error fetching documents: ', error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    getConversations();
+  }, []);
+
     return (
-      <Container>
+      <SafeAreaView style={styles.container}>
         <FlatList 
-          data={Messages}
-          keyExtractor={item=>item.id}
+          data={conversations}
+          keyExtractor={item=>item.chat_id}
           renderItem={({item}) => (
-            <Card onPress={() => router.push("/ChatScreen")}>
+            <Card onPress={() => router.push({pathname: "/ChatScreen", params: {chat_id: item.chat_id, second_user: item.first_user === user.uid.toString() ? item.second_user : item.first_user}})}>
               <UserInfo>
                 <TextSection>
                   <UserInfoText>
-                    <UserName>{item.userName}</UserName>
-                    <PostTime>{item.messageTime}</PostTime>
+                    <UserName>{item.first_user === user.uid.toString() ? item.second_user_email : item.first_user_email}</UserName>
+                    {/* <PostTime>{item.messageTime}</PostTime> */}
                   </UserInfoText>
-                  <MessageText>{item.messageText}</MessageText>
+                  {/* <MessageText>{item.messageText}</MessageText> */}
                 </TextSection>
               </UserInfo>
             </Card>
           )}
         />
-      </Container>
+      </SafeAreaView>
     );
 };
 
@@ -83,6 +75,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1, 
     alignItems: 'center', 
-    justifyContent: 'center'
-  },
+    justifyContent: 'center',
+  }
 });
