@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, where, orderBy, Firestore} from "firebase/firestore";
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
-import { v4 as uuidv4 } from 'uuid';
+import uuid from 'react-native-uuid';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -18,7 +18,7 @@ const ChatScreen = () => {
 
   const getMessages = async () => {
     try {
-      // console.log(router_param.chat_id)
+      console.log(getCurrentLocale())
 
       const messageRef = collection(db, "UserConversations", router_param.chat_id, "messages");
       const q = query(messageRef, orderBy("message.createdAt", "desc"));
@@ -47,6 +47,8 @@ const ChatScreen = () => {
   }
 
   useEffect(() => {
+
+    // console.log(this.context.getLocale())
     
     // setMessages([
     //   {
@@ -83,7 +85,7 @@ const ChatScreen = () => {
           const firebaseData = doc.data();
           firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
           return {
-            _id: uuidv4(),
+            _id: uuid.v4(),
             text: firebaseData.message.text,
             createdAt: firebaseData.message.createdAt.toDate(),
             user: firebaseData.message.user

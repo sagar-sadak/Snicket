@@ -88,7 +88,7 @@ export default function HomeScreen() {
   }
 
   const handleBookPress = (book) => {
-    startChat(book);
+
     if (book.listedByEmail ===user?.email){
       Alert.alert(
         "Delete this listing?",
@@ -103,8 +103,8 @@ export default function HomeScreen() {
       book.title,
       "Choose an option:",
       [
-        {text: "Borrow", onPress: () => startChat(book.listedBy)},
-        {text: "Exchange", onPress: () => Alert.alert("Exchange request sent!")},
+        {text: "Borrow", onPress: () => startChat(book)},
+        {text: "Exchange", onPress: () => startChat(book)},
         {text: "Cancel", style: "cancel"}
       ]
     );
