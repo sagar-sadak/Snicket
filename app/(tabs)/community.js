@@ -3,6 +3,7 @@ import { View, SafeAreaView, ScrollView, Text, TextInput, FlatList, TouchableOpa
 import { FIRESTORE_DB } from '../../firebaseConfig';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Card, Avatar, IconButton } from 'react-native-paper';
+import { logEvent, EVENTS } from '../../analytics';
 
 export default function SocialFeedScreen() {
   const groups = ['General', 'Fiction', 'Non-Fiction', 'Academic'];
@@ -13,6 +14,7 @@ export default function SocialFeedScreen() {
 
   const getPosts = async () => {
     try {
+      // logEvent(EVENTS.VIEWCOMM)
       const snapshot = await getDocs(collection(FIRESTORE_DB, 'community'));
       const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPosts(documents);
@@ -29,6 +31,7 @@ export default function SocialFeedScreen() {
         setPostText('');
         addDoc(collection(FIRESTORE_DB, 'community'), newPost);
     }
+    logEvent(EVENTS.POSTING)
   };
 
   const handleReaction = (id, type) => {
@@ -44,11 +47,14 @@ export default function SocialFeedScreen() {
           dislikes: type === 'dislike' ? (post.userReaction === 'like' ? post.dislikes + 1 : post.dislikes + 1) : (post.userReaction === 'dislike' ? post.dislikes - 1 : post.dislikes),
         };
       }
+      logEvent(EVENTS.POSTENGAGE)
       return post;
+    
     }));
   };
 
   useEffect(() => {
+    logEvent(EVENTS.VIEWCOMM)
     getPosts();
   }, []);
 

@@ -1,6 +1,6 @@
-import { init, track, setUserId, identify } from '@amplitude/analytics-react-native';
-const amplitudeInstance = init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
+import { init, track, setUserId, Identify,identify } from '@amplitude/analytics-react-native';
 
+init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
 
 export const EVENTS = {
     LOGIN: 'Login Attempt',
@@ -15,6 +15,10 @@ export const EVENTS = {
     CHAT_SENT: 'Chat Message Sent',
     PROFILE_LISTING: 'Listed Book from Profile',
     POSTING: 'Created a Post',
+    POSTENGAGE: 'Engaged with a post',
+    LIBBOOK: 'Added book to library',
+    REPORT: 'Reported a Listing',
+    VERIFICATION: 'Checked Verification'
   };
 
 export const logEvent = (eventName, properties = {}) => {
@@ -23,5 +27,11 @@ export const logEvent = (eventName, properties = {}) => {
 
 export const setUser = (userId, userProperties = {}) => {
     setUserId(userId);
-    identify(userProperties);
+
+    const identifyObj = new Identify();
+
+    Object.keys(userProperties).forEach((key) => {
+      identifyObj.set(key, userProperties[key])
+    })
+    identify(identifyObj);
   };

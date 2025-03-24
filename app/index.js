@@ -35,8 +35,8 @@ function Login() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, username, password);
-      logEvent(EVENTS.LOGIN)
-      console.log('amplitude login info sent')
+      // logEvent(EVENTS.LOGIN)
+      // console.log('amplitude login info sent')
       router.replace("(tabs)/home");
     } catch (error) {
       setMessage("Invalid Credentials");

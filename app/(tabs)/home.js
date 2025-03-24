@@ -24,6 +24,7 @@ export default function HomeScreen() {
 
     logEvent(EVENTS.VIEWHOME)
     console.log('amplitude info sent')
+    
     const unsubscribesMain = onSnapshot(collection(db, 'books'),  (snapshot) => {
       let allListings = [];
 
@@ -42,7 +43,7 @@ export default function HomeScreen() {
             allListings.push({
             id: listingDoc.id, // Unique ID for the listing
             bookId: bookId, // Reference to the book (title)
-            title: bookData.title || bookDoc.id, // Fallback to bookId if title is missing
+            title: bookData.title || bookDoc.id, 
             author: bookData.author,
             coverUrl: bookData.coverUrl,
             listedByEmail: listingData.listedByEmail,
@@ -63,7 +64,7 @@ export default function HomeScreen() {
   const startChat = async (book) => {
 
     console.log("Starting chat with user: ", book.listedBy);
-    logEvent(EVENTS.CHAT_SENT)
+    logEvent(EVENTS.CHAT_SENT, {to: book.listedByEmail, bookname: book.title})
 
     try {
 
@@ -105,7 +106,7 @@ export default function HomeScreen() {
         ]
         
       );
-      logEvent(EVENTS.DELETE_BOOK)
+      logEvent(EVENTS.DELETE_BOOK, {bookname: book.title})
     } else {
     Alert.alert(
       book.title,
@@ -143,8 +144,8 @@ export default function HomeScreen() {
         timestamp: Timestamp.now(),
       });
 
-      logEvent(EVENTS.LIST_BOOK)
-      console.log("Amplitude Event Sent: Book Listed");
+      logEvent(EVENTS.LIST_BOOK, {bookname: selectedBook.title, useremail: user.email})
+      
       Alert.alert("Success!", "Book Listed")
       setModalVisible(false);
       setSelectedBook(null);
@@ -161,6 +162,9 @@ export default function HomeScreen() {
       
       const listingRef = doc(db, "books", bookTitle, "listings", listingId)
       await deleteDoc(listingRef); 
+
+      logEvent(EVENTS.DELETE_BOOK,{bookname: bookTitle})
+
       Alert.alert("Success!", "Listing deleted.");
     } catch (error) {
       console.error("Error deleting document:", error);
@@ -170,9 +174,11 @@ export default function HomeScreen() {
 
    const report = (item) => {
     addDoc(collection(FIRESTORE_DB, 'reports'), { user: item.listedByEmail, bookTitle: item.title ? item.title:"Title not found", bookAuthor: item.author ? item.author: "Author not found" });
+    logEvent(EVENTS.REPORT, {listingname: item.title, reported: item.listedByEmail})
     Alert.alert("Post Reported", "We will look into your report and take action accordingly.");
    };
    const verified = () => {
+    logEvent(EVENTS.VERIFICATION)
     Alert.alert("Verification Badge", "User has been verified as a GT student");
    };
 
