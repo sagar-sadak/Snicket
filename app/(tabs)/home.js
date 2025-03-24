@@ -2,12 +2,14 @@ import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, Modal, Image
 import { useRouter, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getAuth } from "firebase/auth";
-import { analytics, FIRESTORE_DB } from '../../firebaseConfig';
+import { FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "firebase/firestore";
 import SearchBook from '../SearchBook';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Timestamp } from "firebase/firestore";
+import { logEvent, EVENTS} from '../../analytics';
+import {track} from '@amplitude/analytics-react-native'
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -19,6 +21,9 @@ export default function HomeScreen() {
   const router = useRouter();
 
   useEffect(() => {
+
+    logEvent(EVENTS.VIEWHOME)
+    console.log('amplitude info sent')
     const unsubscribesMain = onSnapshot(collection(db, 'books'),  (snapshot) => {
       let allListings = [];
 
@@ -58,6 +63,7 @@ export default function HomeScreen() {
   const startChat = async (book) => {
 
     console.log("Starting chat with user: ", book.listedBy);
+    logEvent(EVENTS.CHAT_SENT)
 
     try {
 
@@ -97,7 +103,9 @@ export default function HomeScreen() {
           {text: "Yes, Delete", onPress: ()=> deleteListing(book.bookId, book.id)},
           {text: "Cancel", style: "cancel"}
         ]
+        
       );
+      logEvent(EVENTS.DELETE_BOOK)
     } else {
     Alert.alert(
       book.title,
@@ -134,6 +142,9 @@ export default function HomeScreen() {
         listedBy: user?.uid,
         timestamp: Timestamp.now(),
       });
+
+      logEvent(EVENTS.LIST_BOOK)
+      console.log("Amplitude Event Sent: Book Listed");
       Alert.alert("Success!", "Book Listed")
       setModalVisible(false);
       setSelectedBook(null);

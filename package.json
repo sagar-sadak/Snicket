@@ -9,13 +9,15 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@amplitude/analytics-react-native": "^1.4.13",
     "@flyerhq/react-native-chat-ui": "^1.4.3",
     "@flyerhq/react-native-firebase-chat-core": "^1.4.2",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-firebase/app": "^21.12.0",
     "@react-native-firebase/firestore": "^21.12.0",
     "axios": "^1.8.1",
     "expo": "~52.0.36",
-    "expo-constants": "~17.0.2",
+    "expo-constants": "~17.0.8",
     "expo-linking": "~7.0.5",
     "expo-location": "~18.0.7",
     "expo-router": "~4.0.17",

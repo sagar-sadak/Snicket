@@ -11,8 +11,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import app from '../firebaseConfig';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { logEvent, EVENTS } from '../analytics';
 
-const Login = () => {
+function Login() {
   const router = useRouter();
   const [message, setMessage] = useState('Snicket');
   const [username, setUsername] = useState('');
@@ -21,8 +22,10 @@ const Login = () => {
 
   const handleSignUp = async () => {
     try {
+      
       await createUserWithEmailAndPassword(auth, username, password);
       router.replace("(tabs)/home");
+      
     } catch (error) {
       console.log(error);
       setMessage("Invalid Credentials");
@@ -32,6 +35,8 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, username, password);
+      logEvent(EVENTS.LOGIN)
+      console.log('amplitude login info sent')
       router.replace("(tabs)/home");
     } catch (error) {
       setMessage("Invalid Credentials");
@@ -42,8 +47,8 @@ const Login = () => {
     <View style={styles.container}>
       <Text style={styles.header}>{message}</Text>
 
-      <Ionicons name="lock-closed-outline" size={48} style={{paddingBottom: 30, color: '#fff'}}></Ionicons>
-      
+      <Ionicons name="lock-closed-outline" size={48} style={{ paddingBottom: 30, color: '#fff' }}></Ionicons>
+
       <View style={styles.inputContainer}>
         <Icon name="user" size={20} color="#aaa" style={styles.icon} />
         <TextInput
@@ -51,10 +56,9 @@ const Login = () => {
           placeholder="Username"
           value={username}
           onChangeText={setUsername}
-          placeholderTextColor="#aaa"
-        />
+          placeholderTextColor="#aaa" />
       </View>
-      
+
       <View style={styles.inputContainer}>
         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
         <TextInput
@@ -63,30 +67,29 @@ const Login = () => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          placeholderTextColor="#aaa"
-        />
+          placeholderTextColor="#aaa" />
       </View>
-      
+
       <View style={styles.button}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleLogin}>
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.button}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleSignUp}>
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.signupLink}>
         <Text style={styles.signupText}>Don't have an account? Enter your username and password and click Sign Up</Text>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
