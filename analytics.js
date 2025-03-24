@@ -1,6 +1,4 @@
 import { init, track, setUserId, identify } from '@amplitude/analytics-react-native';
-
-// const amplitudeInstance = init('344af1d7eb077411624fb6078fb2321d');
 const amplitudeInstance = init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
 
 
