@@ -4,7 +4,7 @@ import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextI
 import { FIRESTORE_DB, auth } from '../firebaseConfig';
 import FloatingButton from '../components/common/FloatingButton';
 import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
-import { onAuthStateChanged, updateProfile, signOut } from "firebase/auth";
+import { onAuthStateChanged, updateProfile, signOut, prodErrorMap } from "firebase/auth";
 import { useRouter } from 'expo-router';
 
 
@@ -81,21 +81,23 @@ const ProfileScreen = () => {
       });
 
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
-      const profileData = await getProfileDocument();
+      // const profileData = await getProfileDocument();
+      // console.log(profileata)
 
-      if (profileData) {
+      if (docRef.exists) {
+        // console.log("bye")
         await updateDoc(docRef, {
           userName: name
         });
       } else {
+        // console.log('hi')
         await setDoc(docRef, {
           userName: name,
-          userType: type,
+          userType: userType,
           library: []
         });
       }
       setUserName(name);
-      
       console.log("User name updated to:", name);
     } catch (error) {
       console.error("Error updating user name:", error);
@@ -300,9 +302,9 @@ const ProfileScreen = () => {
   const updateUserType = async (type) => {
     try {
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
-      const profileData = await getProfileDocument();
+      // const profileData = await getProfileDocument();
 
-      if (profileData) {
+      if (docRef.exists) {
         await updateDoc(docRef, {
           userType: type
         });

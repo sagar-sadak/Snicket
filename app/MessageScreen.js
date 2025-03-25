@@ -49,8 +49,8 @@ const MessagesScreen = ({ navigation }) => {
       console.log(conversationsWithNames)
 
 
-      console.log(userConversations[0].chat_id);
-      setConversations(userConversations);
+      console.log(conversationsWithNames[0].chat_id);
+      setConversations(conversationsWithNames);
     } catch (error) {
       console.error('Error fetching documents: ', error);
       return [];
