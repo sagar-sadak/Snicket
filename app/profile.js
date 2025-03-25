@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextI
 import { signOut } from 'firebase/auth';
 import { FIRESTORE_DB, auth } from '../firebaseConfig';
 import FloatingButton from '../components/common/FloatingButton';
-import { doc, setDoc, getDoc, addDoc, collection } from "firebase/firestore";
+import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from 'expo-router';
 
@@ -23,6 +23,8 @@ const ProfileScreen = () => {
   const [bookCoverUrl, setBookCoverUrl] = useState("");
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [userType, setUserType] = useState('casual');
+  const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const router = useRouter();
 
   const exit = () => {
@@ -59,8 +61,26 @@ const ProfileScreen = () => {
     if (user) {
       console.log("User set, now fetching books...");
       populateBooks();
+      getUserType();
     }
   }, [user]);
+
+  const getUserType = async () => {
+    try {
+      const profileData = await getProfileDocument();
+      if (profileData && profileData.userType) {
+        setUserType(profileData.userType);
+
+        // const analyticsInstance = getAnalytics();
+        // setUserProperty({
+        //   user_type: profileData.userType
+        // });
+        console.log("User type retrieved:", profileData.userType);
+      }
+    } catch (error) {
+      console.error("Error fetching user type:", error);
+    }
+  };
 
   const populateBooks = async () => {
     try {
@@ -240,6 +260,85 @@ const ProfileScreen = () => {
     closeBookModal()
   };
 
+  const openUserTypeModal = () => {
+    setShowUserTypeModal(true);
+  };
+
+  const updateUserType = async (type) => {
+    try {
+      const docRef = doc(FIRESTORE_DB, "profile", user.uid);
+      const profileData = await getProfileDocument();
+
+      if (profileData) {
+        await updateDoc(docRef, {
+          userType: type
+        });
+      } else {
+        await setDoc(docRef, {
+          userType: type,
+          library: []
+        });
+      }
+
+      // const analyticsInstance = getAnalytics();
+      // setUserProperty({
+      //   user_type: type
+      // });
+
+      // logEvent('user_type_updated', {
+      //   user: user.uid,
+      //   new_type: type
+      // });
+
+      console.log("User type updated to:", type);
+      setUserType(type);
+      setShowUserTypeModal(false);
+    } catch (error) {
+      console.error("Error updating user type:", error);
+      alert("Failed to update reader type. Please try again.");
+    }
+  };
+
+  const UserTypeModal = () => (
+    <Modal
+      visible={showUserTypeModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowUserTypeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Select Reader Type</Text>
+          <Text style={styles.modalText}>This helps us personalize your experience</Text>
+
+          <TouchableOpacity
+            style={[styles.typeButton, userType === 'casual' && styles.selectedTypeButton]}
+            onPress={() => updateUserType('casual')}
+          >
+            <Text style={styles.typeButtonText}>Casual Reader</Text>
+            <Text style={styles.typeDescription}>I read occasionally</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.typeButton, userType === 'avid' && styles.selectedTypeButton]}
+            onPress={() => updateUserType('avid')}
+          >
+            <Text style={styles.typeButtonText}>Avid Reader</Text>
+            <Text style={styles.typeDescription}>I read frequently</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => setShowUserTypeModal(false)}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+
   return (
     <View style={styles.container}>
       <View style={styles.profileArea}>
@@ -249,6 +348,11 @@ const ProfileScreen = () => {
         />
         <Text style={styles.email}>{email}</Text>
       </View>
+
+      <TouchableOpacity style={styles.userTypeButton} onPress={openUserTypeModal}>
+        <Text style={styles.userTypeLabel}>Reader Type:</Text>
+        <Text style={styles.userTypeValue}>{userType === 'avid' ? 'Avid Reader' : 'Casual Reader'}</Text>
+      </TouchableOpacity>
 
       <View style={styles.booksArea}>
         <Text style={styles.sectionTitle}>My Books</Text>
@@ -356,6 +460,8 @@ const ProfileScreen = () => {
           </View>
         </View>
       </Modal>
+
+      <UserTypeModal />
 
       <TouchableOpacity style={styles.button} onPress={exit}>
         <Text style={styles.buttonText}>Sign Out</Text>
@@ -538,7 +644,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  userTypeButton: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  userTypeLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginRight: 6,
+  },
+  userTypeValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  typeButton: {
+    width: '100%',
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 8,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  selectedTypeButton: {
+    borderColor: '#007AFF',
+    backgroundColor: '#E6F2FF',
+  },
+  typeButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  typeDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
 });
 
 export default ProfileScreen;
-
