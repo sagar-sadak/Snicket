@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
-import { FIRESTORE_DB } from '../../firebaseConfig';
+import { FIRESTORE_DB, auth } from '../../firebaseConfig';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { Card, Avatar, IconButton } from 'react-native-paper';
 import { logEvent, EVENTS } from '../../analytics';
@@ -10,7 +10,9 @@ export default function SocialFeedScreen() {
   const [selectedGroup, setSelectedGroup] = useState('General');
   const [postText, setPostText] = useState('');
   const [posts, setPosts] = useState([]);
+  const [userDisplayName, setUserDisplayName] = useState('')
   const filteredPosts = posts.filter(post => post.group === selectedGroup);
+
 
   const getPosts = async () => {
     try {
@@ -26,7 +28,7 @@ export default function SocialFeedScreen() {
 
   const handlePost = () => {
     if (postText.trim().length > 0) {
-        const newPost = { id: Date.now().toString(), group: selectedGroup, name: "New User", avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0 };
+        const newPost = { id: Date.now().toString(), group: selectedGroup, name: userDisplayName, avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0 };
         setPosts([newPost, ...posts]);
         setPostText('');
         addDoc(collection(FIRESTORE_DB, 'community'), newPost);
@@ -54,8 +56,10 @@ export default function SocialFeedScreen() {
   };
 
   useEffect(() => {
+
     logEvent(EVENTS.VIEWCOMM)
     getPosts();
+    setUserDisplayName(auth.currentUser.displayName)
   }, []);
 
   return (
@@ -91,7 +95,7 @@ export default function SocialFeedScreen() {
             renderItem={({ item }) => (
                 <Card style={styles.card}>
                   <Card.Title
-                    title={item.name}
+                    title={item.name ? item.name : 'Anonymous'}
                     subtitle={item.time}
                     subtitleStyle={{ fontSize: 12 }}
                     left={(props) => <Avatar.Image {...props} source={{ uri: item.avatar }} size={40} />}

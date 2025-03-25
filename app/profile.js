@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
-import { signOut } from 'firebase/auth';
+// import { signOut } from 'firebase/auth';
 import { FIRESTORE_DB, auth } from '../firebaseConfig';
 import FloatingButton from '../components/common/FloatingButton';
 import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, updateProfile, signOut } from "firebase/auth";
 import { useRouter } from 'expo-router';
 
 
@@ -25,6 +25,9 @@ const ProfileScreen = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [userType, setUserType] = useState('casual');
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const router = useRouter();
 
   const exit = () => {
@@ -45,6 +48,10 @@ const ProfileScreen = () => {
         console.log("User email:", loggedInUser.email);
         setEmail(loggedInUser.email);
         setUser(loggedInUser);
+        if (loggedInUser.displayName) {
+          setUserName(loggedInUser.displayName);
+          console.log("User name:", loggedInUser.displayName);
+        }
       } else {
         console.log("No user detected");
         setUser(null);
@@ -65,16 +72,42 @@ const ProfileScreen = () => {
     }
   }, [user]);
 
+
+
+  const updateUserName = async (name) => {
+    try {
+      await updateProfile(auth.currentUser, {
+        displayName: name
+      });
+
+      const docRef = doc(FIRESTORE_DB, "profile", user.uid);
+      const profileData = await getProfileDocument();
+
+      if (profileData) {
+        await updateDoc(docRef, {
+          userName: name
+        });
+      } else {
+        await setDoc(docRef, {
+          userName: name,
+          userType: type,
+          library: []
+        });
+      }
+      setUserName(name);
+      
+      console.log("User name updated to:", name);
+    } catch (error) {
+      console.error("Error updating user name:", error);
+      alert("Failed to update name. Please try again.");
+    }
+  };
+
   const getUserType = async () => {
     try {
       const profileData = await getProfileDocument();
       if (profileData && profileData.userType) {
         setUserType(profileData.userType);
-
-        // const analyticsInstance = getAnalytics();
-        // setUserProperty({
-        //   user_type: profileData.userType
-        // });
         console.log("User type retrieved:", profileData.userType);
       }
     } catch (error) {
@@ -280,16 +313,6 @@ const ProfileScreen = () => {
         });
       }
 
-      // const analyticsInstance = getAnalytics();
-      // setUserProperty({
-      //   user_type: type
-      // });
-
-      // logEvent('user_type_updated', {
-      //   user: user.uid,
-      //   new_type: type
-      // });
-
       console.log("User type updated to:", type);
       setUserType(type);
       setShowUserTypeModal(false);
@@ -298,6 +321,56 @@ const ProfileScreen = () => {
       alert("Failed to update reader type. Please try again.");
     }
   };
+
+  const openNameModal = () => {
+    setNameInput(userName);
+    setShowNameModal(true);
+  };
+
+  const handleNameUpdate = () => {
+    if (nameInput.trim()) {
+      updateUserName(nameInput.trim());
+      setShowNameModal(false);
+    } else {
+      alert("Please enter a valid name");
+    }
+  };
+
+  const NameEditModal = () => (
+    <Modal
+      visible={showNameModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowNameModal(false)}
+    >
+      
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Edit Your Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your name"
+            onChangeText={setNameInput}
+            value={nameInput}
+          />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={handleNameUpdate}
+            >
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowNameModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const UserTypeModal = () => (
     <Modal
@@ -346,6 +419,12 @@ const ProfileScreen = () => {
           source={{ uri: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
           style={styles.profileImage}
         />
+        <TouchableOpacity onPress={openNameModal}>
+          <Text style={styles.userName}>
+            {userName || 'Add Your Name'}
+            <Text style={styles.editIcon}> ✎</Text>
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.email}>{email}</Text>
       </View>
 
@@ -462,6 +541,7 @@ const ProfileScreen = () => {
       </Modal>
 
       <UserTypeModal />
+      <NameEditModal />
 
       <TouchableOpacity style={styles.button} onPress={exit}>
         <Text style={styles.buttonText}>Sign Out</Text>
@@ -697,6 +777,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
     textAlign: 'center',
+  },
+  userName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  editIcon: {
+    fontSize: 16,
+    color: '#007AFF',
   },
 });
 
