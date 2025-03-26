@@ -15,7 +15,6 @@ export const EVENTS = {
     DELETE_BOOK: 'Book Deleted',
     BORROWBOOK: 'Borrow Button Click',
     EXCHANGEBOOK: 'Exchange Button Click',
-    CHAT_SENT: 'Chat Message Sent',
     PROFILE_LISTING: 'Listed Book from Profile',
     POSTING: 'Created a Post',
     POSTENGAGE: 'Engaged with a post',
@@ -25,8 +24,11 @@ export const EVENTS = {
     UPDATE_USERNAME: 'User Name Added',
     SERACH_BOOK_PROFILE: 'Book searched from profile',
     UPDATE_USERTYPE: 'User Type Updated',
-    CHAT_INITIATED: 'Initiated Chat',
-    EXIT: 'Signed Out'
+    EXIT: 'Signed Out',
+    CHAT_INITIATED: 'Chat_Initiated',
+    MESSAGE_SENT: 'Message_Sent',
+    VIEW_MESSAGE_SCREEN: 'View_MessageScreen',
+    VIEW_CHAT_SCREEN: 'View_ChatScreen',
   };
 
 const getProfileDocument = async () => {

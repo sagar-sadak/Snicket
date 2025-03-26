@@ -8,7 +8,7 @@ import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, 
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
 import uuid from 'react-native-uuid';
-import {logEvent, EVENTS} from '../analytics.js'
+import { logEvent, EVENTS, setUser} from '../analytics';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -48,6 +48,9 @@ const ChatScreen = () => {
   }
 
   useEffect(() => {
+
+    setUser(user.uid)
+    logEvent(EVENTS.VIEW_CHAT_SCREEN, { userId: user.uid });
 
     // console.log(this.context.getLocale())
     
@@ -105,6 +108,7 @@ const ChatScreen = () => {
     // setMessages((previousMessages) =>
     //   GiftedChat.append(previousMessages, messages),
     // );
+    
 
     try {      
       const messageRef = collection(db, 'UserConversations', router_param.chat_id, 'messages');
@@ -117,7 +121,8 @@ const ChatScreen = () => {
 
       await addDoc(messageRef, new_message);
       
-      logEvent(EVENTS.CHAT_SENT)
+      setUser(user.uid)
+      logEvent(EVENTS.MESSAGE_SENT, { userId: user.uid })
       console.log("Message Saved to DB")
     } 
     catch (error){

@@ -16,6 +16,7 @@ import {
   MessageText,
   TextSection,
 } from './styles/MessageStyles';
+import { logEvent, EVENTS, setUser} from '../analytics';
 
 const MessagesScreen = ({ navigation }) => {
   const router = useRouter();
@@ -74,6 +75,9 @@ const MessagesScreen = ({ navigation }) => {
   }
 
   useEffect(() => {
+    setUser(user.uid)
+    logEvent(EVENTS.VIEW_MESSAGE_SCREEN, { userId: user.uid });
+    
     getConversations();
   }, []);
 
