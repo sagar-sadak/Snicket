@@ -6,23 +6,24 @@ import { doc, getDoc } from "firebase/firestore";
 init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
 
 export const EVENTS = {
-  LOGIN: 'Login Attempt',
-  SIGNUP: 'Signup Attempt',
-  VIEWHOME: 'Visit Home Page',
-  VIEWPROFILE: 'Visit Profile Page',
-  VIEWCOMM: 'Visit Community Page',
-  LIST_BOOK: 'Book Listed',
-  DELETE_BOOK: 'Book Deleted',
-  BORROWBOOK: 'Borrow Button Click',
-  EXCHANGEBOOK: 'Exchange Button Click',
-  CHAT_SENT: 'Chat Message Sent',
-  PROFILE_LISTING: 'Listed Book from Profile',
-  POSTING: 'Created a Post',
-  POSTENGAGE: 'Engaged with a post',
-  LIBBOOK: 'Added book to library',
-  REPORT: 'Reported a Listing',
-  VERIFICATION: 'Checked Verification'
-};
+    LOGIN: 'Login Attempt',
+    SIGNUP: 'Signup Attempt',
+    VIEWHOME: 'Visit Home Page',
+    VIEWPROFILE: 'Visit Profile Page', 
+    VIEWCOMM: 'Visit Community Page', 
+    LIST_BOOK: 'Book Listed',
+    DELETE_BOOK: 'Book Deleted',
+    BORROWBOOK: 'Borrow Button Click',
+    EXCHANGEBOOK: 'Exchange Button Click',
+    CHAT_SENT: 'Chat Message Sent',
+    PROFILE_LISTING: 'Listed Book from Profile',
+    POSTING: 'Created a Post',
+    POSTENGAGE: 'Engaged with a post',
+    LIBBOOK: 'Added book to library',
+    REPORT: 'Reported a Listing',
+    VERIFICATION: 'Checked Verification',
+    USERTYPE: 'Added User Type'
+  };
 
 const getProfileDocument = async () => {
   try {
@@ -66,7 +67,11 @@ export const logEvent = async (eventName, properties = {}) => {
 };
 
 export const setUser = (userId, userProperties = {}) => {
-  setUserId(userId);
+
+    if (!userId && userProperties.email) {
+    userId = userProperties.email; 
+    }
+    setUserId(userId);
 
   const identifyObj = new Identify();
 
