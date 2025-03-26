@@ -81,10 +81,9 @@ const ProfileScreen = () => {
       });
 
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
-      // const profileData = await getProfileDocument();
-      // console.log(profileata)
+      const profileData = await getProfileDocument();
 
-      if (docRef.exists) {
+      if (profileData) {
         // console.log("bye")
         await updateDoc(docRef, {
           userName: name
@@ -303,16 +302,21 @@ const ProfileScreen = () => {
   const updateUserType = async (type) => {
     try {
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
-      // const profileData = await getProfileDocument();
+      // console.log("sup", docRef.exists())
+      const profileData = await getProfileDocument();
+      console.log("hi", profileData)
 
-      if (docRef.exists) {
+      if (profileData) {
+        console.log("exists")
+        // profileData.userType = type
+        // await updateDoc(docRef, profileData);
         await updateDoc(docRef, {
           userType: type
         });
       } else {
+        console.log("no exists")
         await setDoc(docRef, {
-          userType: type,
-          library: []
+          userType: type
         });
       }
       setUserAnalytics()
