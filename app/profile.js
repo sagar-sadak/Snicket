@@ -97,6 +97,7 @@ const ProfileScreen = () => {
         });
       }
       setUserName(name);
+      logEvent(EVENTS.UPDATE_USERNAME)
       console.log("User name updated to:", name);
     } catch (error) {
       console.error("Error updating user name:", error);
@@ -194,6 +195,7 @@ const ProfileScreen = () => {
         setBookCoverUrl(coverUrl);
         setBookDetailsVisible(true);
         setError('');
+        logEvent(EVENTS.SERACH_BOOK_PROFILE)
       }
     } catch (error) {
       console.error('Error fetching book data:', error);
@@ -207,6 +209,7 @@ const ProfileScreen = () => {
   const handleAddSelection = async () => {
     console.log('Add book called for user -', user.uid, "Book info -", isbn, bookAuthor, bookTitle, bookCoverUrl)
     await addBook(user.uid, isbn, bookAuthor, bookTitle, bookCoverUrl);
+    logEvent(EVENTS.LIBBOOK)
   }
 
   const handleCloseModal = () => {
@@ -265,6 +268,7 @@ const ProfileScreen = () => {
       await setDoc(docRef, { "library": updatedBooks });
 
       alert("Book removed successfully!");
+      logEvent(EVENTS.DELETE_BOOK)
     } catch (error) {
       console.error("Error removing book:", error);
       alert("Failed to remove book. Please try again.");
@@ -323,6 +327,7 @@ const ProfileScreen = () => {
       console.log("User type updated to:", type);
       setUserType(type);
       setShowUserTypeModal(false);
+      logEvent(EVENTS.UPDATE_USERTYPE)
     } catch (error) {
       console.error("Error updating user type:", error);
       alert("Failed to update reader type. Please try again.");

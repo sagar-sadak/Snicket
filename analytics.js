@@ -21,7 +21,10 @@ export const EVENTS = {
     POSTENGAGE: 'Engaged with a post',
     LIBBOOK: 'Added book to library',
     REPORT: 'Reported a Listing',
-    VERIFICATION: 'Checked Verification'
+    VERIFICATION: 'Checked Verification',
+    UPDATE_USERNAME: 'User Name Added',
+    SERACH_BOOK_PROFILE: 'Book searched from profile',
+    UPDATE_USERTYPE: 'User Type Updated',
   };
 
 const getProfileDocument = async () => {
