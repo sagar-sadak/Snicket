@@ -6,7 +6,7 @@ import FloatingButton from '../components/common/FloatingButton';
 import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged, updateProfile, signOut, prodErrorMap } from "firebase/auth";
 import { useRouter } from 'expo-router';
-
+import { logEvent, EVENTS } from '../analytics';
 
 const ProfileScreen = () => {
   const [email, setEmail] = useState('');
@@ -287,6 +287,7 @@ const ProfileScreen = () => {
         timestamp: new Date(),
 
       });
+      logEvent(EVENTS.PROFILE_LISTING)
       alert("Success", "Book Listed");
     } catch (error) {
       console.error("Error adding document: ", error);
