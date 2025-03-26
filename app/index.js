@@ -24,6 +24,7 @@ function Login() {
     try {
       
       await createUserWithEmailAndPassword(auth, username, password);
+      logEvent(EVENTS.SIGNUP)
       router.replace("(tabs)/home");
       
     } catch (error) {
@@ -35,7 +36,7 @@ function Login() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, username, password);
-      // logEvent(EVENTS.LOGIN)
+      logEvent(EVENTS.LOGIN)
       // console.log('amplitude login info sent')
       router.replace("(tabs)/home");
     } catch (error) {

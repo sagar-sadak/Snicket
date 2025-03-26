@@ -65,7 +65,7 @@ export default function HomeScreen() {
   const startChat = async (book) => {
 
     console.log("Starting chat with user: ", book.listedBy);
-    logEvent(EVENTS.CHAT_SENT, {to: book.listedByEmail, bookname: book.title})
+    logEvent(EVENTS.CHAT_INITIATED, {to: book.listedByEmail, bookname: book.title})
 
     try {
 

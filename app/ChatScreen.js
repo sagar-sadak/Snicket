@@ -8,6 +8,7 @@ import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, 
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
 import uuid from 'react-native-uuid';
+import {logEvent, EVENTS} from '../analytics.js'
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -115,7 +116,8 @@ const ChatScreen = () => {
       }
 
       await addDoc(messageRef, new_message);
-
+      
+      logEvent(EVENTS.CHAT_SENT)
       console.log("Message Saved to DB")
     } 
     catch (error){

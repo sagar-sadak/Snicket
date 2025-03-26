@@ -37,6 +37,7 @@ export default function SocialFeedScreen() {
   };
 
   const handleReaction = (id, type) => {
+    logEvent(EVENTS.POSTENGAGE)
     setPosts(posts.map(post => {
       if (post.id === id) {
         if (post.userReaction === type) {
@@ -49,7 +50,7 @@ export default function SocialFeedScreen() {
           dislikes: type === 'dislike' ? (post.userReaction === 'like' ? post.dislikes + 1 : post.dislikes + 1) : (post.userReaction === 'dislike' ? post.dislikes - 1 : post.dislikes),
         };
       }
-      logEvent(EVENTS.POSTENGAGE)
+      
       return post;
     
     }));

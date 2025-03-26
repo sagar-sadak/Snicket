@@ -25,6 +25,8 @@ export const EVENTS = {
     UPDATE_USERNAME: 'User Name Added',
     SERACH_BOOK_PROFILE: 'Book searched from profile',
     UPDATE_USERTYPE: 'User Type Updated',
+    CHAT_INITIATED: 'Initiated Chat',
+    EXIT: 'Signed Out'
   };
 
 const getProfileDocument = async () => {

@@ -32,7 +32,9 @@ const ProfileScreen = () => {
 
   const exit = () => {
     signOut(auth).then(() => {
+      logEvent(EVENTS.EXIT)
       console.log("Logged out");
+
     }).catch((error) => {
       console.log(error);
     });
@@ -41,6 +43,7 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     console.log("Setting up auth state listener");
+    logEvent(EVENTS.VIEWPROFILE)
     const unsubscribe = onAuthStateChanged(auth, (loggedInUser) => {
       console.log("Auth state changed:", loggedInUser ? "User present" : "No user");
       if (loggedInUser) {
