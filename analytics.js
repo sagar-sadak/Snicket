@@ -18,7 +18,8 @@ export const EVENTS = {
     POSTENGAGE: 'Engaged with a post',
     LIBBOOK: 'Added book to library',
     REPORT: 'Reported a Listing',
-    VERIFICATION: 'Checked Verification'
+    VERIFICATION: 'Checked Verification',
+    USERTYPE: 'Added User Type'
   };
 
 export const logEvent = (eventName, properties = {}) => {
@@ -26,6 +27,10 @@ export const logEvent = (eventName, properties = {}) => {
   };
 
 export const setUser = (userId, userProperties = {}) => {
+
+    if (!userId && userProperties.email) {
+    userId = userProperties.email; 
+    }
     setUserId(userId);
 
     const identifyObj = new Identify();

@@ -140,7 +140,7 @@ export default function HomeScreen() {
       const listingRef = collection(bookRef, 'listings');
       await addDoc(listingRef, {
         listedByEmail: user?.email || 'Unknown',
-        listedBy: user?.uid,
+        listedBy: user?.uid, 
         timestamp: Timestamp.now(),
       });
 
@@ -233,7 +233,7 @@ export default function HomeScreen() {
             <View style={styles.bookInfo}>
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style ={styles.bookUser}>{item.author}</Text>
-              <Text style={styles.bookUser}>{isUserBook ? "Your Listing" : `Listed by: ${item.listedByEmail}`}</Text>
+              <Text style={styles.bookUser}>{isUserBook ? "Your Listing" : `Listed by: ${item.listedByEmail.split('@')[0]}`}</Text>
             </View>
           </View>
           </TouchableOpacity>
