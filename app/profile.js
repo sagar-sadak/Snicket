@@ -6,7 +6,7 @@ import FloatingButton from '../components/common/FloatingButton';
 import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged, updateProfile, signOut, prodErrorMap } from "firebase/auth";
 import { useRouter } from 'expo-router';
-import { logEvent, EVENTS } from '../analytics';
+import { logEvent, EVENTS, setUser as setUserAnalytics } from '../analytics';
 
 const ProfileScreen = () => {
   const [email, setEmail] = useState('');
@@ -315,7 +315,7 @@ const ProfileScreen = () => {
           library: []
         });
       }
-
+      setUserAnalytics()
       console.log("User type updated to:", type);
       setUserType(type);
       setShowUserTypeModal(false);

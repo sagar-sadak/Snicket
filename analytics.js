@@ -21,8 +21,7 @@ export const EVENTS = {
     POSTENGAGE: 'Engaged with a post',
     LIBBOOK: 'Added book to library',
     REPORT: 'Reported a Listing',
-    VERIFICATION: 'Checked Verification',
-    USERTYPE: 'Added User Type'
+    VERIFICATION: 'Checked Verification'
   };
 
 const getProfileDocument = async () => {
@@ -59,19 +58,21 @@ const getUserType = async () => {
   }
 };
 
-
 export const logEvent = async (eventName, properties = {}) => {
   userType = await getUserType()
   console.log("got usertype", {...properties, userType})
   track(eventName, {...properties, userType});
 };
 
-export const setUser = (userId, userProperties = {}) => {
-
+export const setUser = async(userId, userProperties = {}) => {
     if (!userId && userProperties.email) {
     userId = userProperties.email; 
+    } else {
+      userType = await getUserType()
+      userProperties = {...userProperties, userType}
     }
-    setUserId(userId);
+  setUserId(userId);
+  console.log("set user properties", userProperties)
 
   const identifyObj = new Identify();
 
