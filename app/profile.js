@@ -85,17 +85,17 @@ const ProfileScreen = () => {
 
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
       const profileData = await getProfileDocument();
-      console.log(profileData, "hey")
-      console.log(Object.keys(profileData).length === 0)
+      // console.log(profileData, "hey")
+      // console.log(Object.keys(profileData).length === 0)
       if (Object.keys(profileData).length === 0) {
-        console.log('hi')
+        // console.log('hi')
         await setDoc(docRef, {
           userName: name,
           userType: userType,
           library: []
         });
       } else {
-        console.log("bye")
+        // console.log("bye")
         await updateDoc(docRef, {
           userName: name
         }); 
@@ -312,18 +312,18 @@ const ProfileScreen = () => {
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
       // console.log("sup", docRef.exists())
       const profileData = await getProfileDocument();
-      console.log("hi", profileData)
+      // console.log("hi", profileData)
 
-      if (profileData) {
-        console.log("exists")
+      if (Object.keys(profileData).length === 0) {
         // profileData.userType = type
         // await updateDoc(docRef, profileData);
-        await updateDoc(docRef, {
+        console.log("no exists")
+        await setDoc(docRef, {
           userType: type
         });
       } else {
-        console.log("no exists")
-        await setDoc(docRef, {
+        console.log("exists")
+        await updateDoc(docRef, {
           userType: type
         });
       }
