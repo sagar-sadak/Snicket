@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextI
 // import { signOut } from 'firebase/auth';
 import { FIRESTORE_DB, auth } from '../firebaseConfig';
 import FloatingButton from '../components/common/FloatingButton';
-import { doc, setDoc, getDoc, addDoc, collection, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, addDoc, collection, updateDoc, Timestamp } from "firebase/firestore";
 import { onAuthStateChanged, updateProfile, signOut, prodErrorMap } from "firebase/auth";
 import { useRouter } from 'expo-router';
 import { logEvent, EVENTS, setUser as setUserAnalytics } from '../analytics';
@@ -294,8 +294,8 @@ const ProfileScreen = () => {
   };
 
   const handleAddListing = async () => {
-    // const title = selectedBook.title
-    // const author = selectedBook.authors
+    const title = selectedBook.title
+    const author = selectedBook.authors
     console.log("add listing called for book", title, author)
     // await addDoc(collection(FIRESTORE_DB, "listings"), {
     //   title,
@@ -307,6 +307,7 @@ const ProfileScreen = () => {
     // });
     try {
       const bookRef = doc(FIRESTORE_DB, 'books', selectedBook.title);
+      console.log("test", bookRef)
       await setDoc(bookRef, {
         author: selectedBook.authors,
         coverUrl: selectedBook.coverUrl
