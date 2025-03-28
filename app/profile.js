@@ -85,19 +85,20 @@ const ProfileScreen = () => {
 
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
       const profileData = await getProfileDocument();
-
-      if (profileData) {
-        // console.log("bye")
-        await updateDoc(docRef, {
-          userName: name
-        });
-      } else {
-        // console.log('hi')
+      console.log(profileData, "hey")
+      console.log(Object.keys(profileData).length === 0)
+      if (Object.keys(profileData).length === 0) {
+        console.log('hi')
         await setDoc(docRef, {
           userName: name,
           userType: userType,
           library: []
         });
+      } else {
+        console.log("bye")
+        await updateDoc(docRef, {
+          userName: name
+        }); 
       }
       setUserName(name);
       logEvent(EVENTS.UPDATE_USERNAME)
