@@ -98,7 +98,7 @@ const ProfileScreen = () => {
         // console.log("bye")
         await updateDoc(docRef, {
           userName: name
-        }); 
+        });
       }
       setUserName(name);
       logEvent(EVENTS.UPDATE_USERNAME)
@@ -226,6 +226,7 @@ const ProfileScreen = () => {
   const addBook = async (userId, isbn, authors, title, coverUrl) => {
     try {
       const bookExists = books.some(book => book.isbn === isbn);
+      const profileData = await getProfileDocument()
       console.log("Exists?", bookExists);
 
       if (!bookExists) {
@@ -234,7 +235,15 @@ const ProfileScreen = () => {
           const updatedBooks = [...prevBooks, ...data];
 
           const docRef = doc(FIRESTORE_DB, "profile", userId);
-          setDoc(docRef, { "library": updatedBooks });
+          if (Object.keys(profileData).length === 0) {
+            setDoc(docRef, { "library": updatedBooks });
+          } else {
+            console.log("exists")
+            updateDoc(docRef, {
+              "library": updatedBooks
+            });
+          }
+
 
           console.log("Adding book", updatedBooks);
           console.log(`Book added successfully to collection profile`);
@@ -266,11 +275,14 @@ const ProfileScreen = () => {
 
     try {
       const updatedBooks = books.filter(book => book.isbn !== selectedBook.isbn);
-
+      const profileData = await getProfileDocument()
       setBooks(updatedBooks);
       const docRef = doc(FIRESTORE_DB, "profile", user.uid);
-      await setDoc(docRef, { "library": updatedBooks });
-
+      if(Object.keys(profileData).length === 0){
+        await setDoc(docRef, { "library": updatedBooks });
+      } else {
+        await updateDoc(docRef, { "library": updatedBooks });
+      }
       alert("Book removed successfully!");
       logEvent(EVENTS.DELETE_BOOK)
     } catch (error) {
@@ -282,18 +294,33 @@ const ProfileScreen = () => {
   };
 
   const handleAddListing = async () => {
-    const title = selectedBook.title
-    const author = selectedBook.authors
+    // const title = selectedBook.title
+    // const author = selectedBook.authors
     console.log("add listing called for book", title, author)
-    try {
-      await addDoc(collection(FIRESTORE_DB, "listings"), {
-        title,
-        author,
-        listedBy: user?.uid,
-        listedByEmail: user?.email || "Unknown",
-        timestamp: new Date(),
+    // await addDoc(collection(FIRESTORE_DB, "listings"), {
+    //   title,
+    //   author,
+    //   listedBy: user?.uid,
+    //   listedByEmail: user?.email || "Unknown",
+    //   timestamp: new Date(),
 
+    // });
+    try {
+      const bookRef = doc(FIRESTORE_DB, 'books', selectedBook.title);
+      await setDoc(bookRef, {
+        author: selectedBook.authors,
+        coverUrl: selectedBook.coverUrl
+      },
+        { merge: true });
+
+      const listingRef = collection(bookRef, 'listings');
+      await addDoc(listingRef, {
+        listedByEmail: user?.email || 'Unknown',
+        listedBy: user?.uid,
+        timestamp: Timestamp.now(),
       });
+
+      // Alert.alert("Success!", "Book Listed")
       logEvent(EVENTS.PROFILE_LISTING)
       alert("Success", "Book Listed");
     } catch (error) {
@@ -359,7 +386,7 @@ const ProfileScreen = () => {
       animationType="slide"
       onRequestClose={() => setShowNameModal(false)}
     >
-      
+
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Edit Your Name</Text>
