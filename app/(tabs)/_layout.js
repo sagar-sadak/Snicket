@@ -23,7 +23,7 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'planet-sharp' : 'planet-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'book-sharp' : 'book-outline'} color={color} size={24} />
           ),
         }}
       />
@@ -36,24 +36,8 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="MessageScreen"
-        options={{
-          title: 'Messages',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} color={color} size={24}/>
-          )
-        }}
-      /> */}
-      {/* <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={24}/>
-          ),
-        }}
-      /> */}
+      
+      
     </Tabs>
   );
 }
