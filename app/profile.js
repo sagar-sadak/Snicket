@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, Modal, TouchableOpacity, TextInput, ActivityIndicator, SafeAreaView } from 'react-native';
 // import { signOut } from 'firebase/auth';
 import { FIRESTORE_DB, auth } from '../firebaseConfig';
@@ -28,6 +28,7 @@ const ProfileScreen = () => {
   const [userName, setUserName] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const nameInputRef = useRef(null)
   const router = useRouter();
 
   const exit = () => {
@@ -41,6 +42,7 @@ const ProfileScreen = () => {
     router.replace("/");
   };
 
+  
   useEffect(() => {
     console.log("Setting up auth state listener");
     logEvent(EVENTS.VIEWPROFILE)
@@ -367,13 +369,15 @@ const ProfileScreen = () => {
   };
 
   const openNameModal = () => {
-    setNameInput(userName);
+    nameInputRef.current = userName
+    // setNameInput(userName);
     setShowNameModal(true);
   };
 
   const handleNameUpdate = () => {
-    if (nameInput.trim()) {
-      updateUserName(nameInput.trim());
+    
+    if (nameInputRef.current.trim()) {
+      updateUserName(nameInputRef.current.trim());
       setShowNameModal(false);
     } else {
       alert("Please enter a valid name");
@@ -381,21 +385,23 @@ const ProfileScreen = () => {
   };
 
   const NameEditModal = () => (
+    
     <Modal
       visible={showNameModal}
       transparent
       animationType="slide"
       onRequestClose={() => setShowNameModal(false)}
     >
-
+      
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Edit Your Name</Text>
           <TextInput
-            style={styles.input}
+            style={styles.input}            
             placeholder="Enter your name"
-            onChangeText={setNameInput}
-            value={nameInput}
+            defaultValue={nameInputRef.current}
+            onChangeText={(text) => nameInputRef.current = text}
+            
           />
           <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -413,7 +419,9 @@ const ProfileScreen = () => {
           </View>
         </View>
       </View>
+      
     </Modal>
+    
   );
 
   const UserTypeModal = () => (

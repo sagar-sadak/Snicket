@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {View, ScrollView, Text, Button, StyleSheet} from 'react-native';
+import {View, ScrollView, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
 import {Bubble, GiftedChat, Send} from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -16,6 +16,11 @@ const ChatScreen = () => {
   const auth = getAuth();
   const user = auth.currentUser;
   const db = FIRESTORE_DB;
+
+  const handleVisitProfile = () => {
+    console.log('navigate to this user profile');
+    alert('Functionality coming soon!')
+  };
 
   const getMessages = async () => {
     try {
@@ -171,6 +176,12 @@ const ChatScreen = () => {
   }
 
   return (
+
+    <View style= {{flex:1}}>
+    
+    <TouchableOpacity style = {styles.profileButton} onPress = {handleVisitProfile}>
+      <Text style = {styles.profileButtonText}>Visit This User's Profile</Text>
+    </TouchableOpacity>
     <GiftedChat
       messages={messages}
       onSend={(messages) => onSend(messages)}
@@ -183,6 +194,7 @@ const ChatScreen = () => {
       scrollToBottom
       scrollToBottomComponent={scrollToBottomComponent}
     />
+    </View>
   );
 };
 
@@ -194,4 +206,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  profileButton : {
+    backgroundColor: '#2e64e5',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  }
 });

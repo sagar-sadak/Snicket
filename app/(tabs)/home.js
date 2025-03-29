@@ -9,7 +9,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Timestamp } from "firebase/firestore";
 import { logEvent, EVENTS, setUser} from '../../analytics';
-import {track} from '@amplitude/analytics-react-native'
 
 export default function HomeScreen() {
   const auth = getAuth();
