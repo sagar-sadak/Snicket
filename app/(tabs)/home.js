@@ -188,7 +188,8 @@ export default function HomeScreen() {
   const booksToDisplay = searchQuery
         ? books.filter(book => book.title.toLowerCase().includes(searchQuery.toLowerCase()))
         : books ; 
-
+  
+  
   
   return (
     <>
@@ -254,6 +255,7 @@ export default function HomeScreen() {
               <Text style={styles.bookTitle}>{item.title}</Text>
               <Text style ={styles.bookUser}>{item.author}</Text>
               <Text style={styles.bookUser}>{isUserBook ? "Your Listing" : `Listed by: ${item.listedByEmail.split('@')[0]}`}</Text>
+              <Text style ={styles.bookUser}>Posted on: {new Date(item.timestamp.seconds * 1000).toLocaleDateString()}</Text>
             </View>
           </View>
           </TouchableOpacity>
