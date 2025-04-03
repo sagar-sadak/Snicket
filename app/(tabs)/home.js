@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, Modal, Image, TextInput } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback} from 'react';
 import { getAuth } from "firebase/auth";
 import { FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "firebase/firestore";
@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const searchInputRef = useRef(null)
+  const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(null);
   const router = useRouter();
 
@@ -184,6 +185,10 @@ export default function HomeScreen() {
     Alert.alert("Verification Badge", "User has been verified as a GT student");
    };
 
+  const booksToDisplay = searchQuery
+        ? books.filter(book => book.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        : books ; 
+
   
   return (
     <>
@@ -200,16 +205,13 @@ export default function HomeScreen() {
       ), 
       headerTitle: () => (
         <TextInput
-        
-        style = {[styles.listingSearchBox,
-          isFocused 
-        ]}
-        placeholder = "Search for a listing..."
-        placeholderTextColor = "#888"
-        defaultValue={searchInputRef.current}
-        onChangeText={ (text) => searchInputRef.current = text}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        ref={searchInputRef}
+        style = {styles.listingSearchBox}
+        placeholder = "Search listing by book title..."
+        placeholderTextColor = "#888"        
+        value={searchQuery}        
+        onChangeText={(text) => setSearchQuery(text)}
+        width = {250}
         submitBehavior='blurAndSubmit'
         
         />
@@ -227,7 +229,7 @@ export default function HomeScreen() {
       
 
       <FlatList
-        data={[...books].sort((a, b) => b.timestamp - a.timestamp)}
+        data={[...booksToDisplay].sort((a, b) => b.timestamp - a.timestamp)}
         keyExtractor={(item) => item.id}  
         numColumns={2}
         columnWrapperStyle = {styles.row}
