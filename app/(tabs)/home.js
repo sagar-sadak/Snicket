@@ -1,6 +1,6 @@
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, Modal, Image } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Alert, Modal, Image, TextInput } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getAuth } from "firebase/auth";
 import { FIRESTORE_DB } from '../../firebaseConfig';
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs} from "firebase/firestore";
@@ -17,6 +17,8 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+  const searchInputRef = useRef(null)
+  const [isFocused, setIsFocused] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -187,7 +189,7 @@ export default function HomeScreen() {
     <>
     <Stack.Screen
     options={{
-      title: "Explore Listings",
+      title: "",
       headerStyle: {backgroundColor: "#25292e"},
       headerTintColor: "#fff",
       headerTitleAlign: 'center',
@@ -196,6 +198,22 @@ export default function HomeScreen() {
           <Ionicons name="person-circle-outline" size={28} color="white" />
         </TouchableOpacity>
       ), 
+      headerTitle: () => (
+        <TextInput
+        
+        style = {[styles.listingSearchBox,
+          isFocused 
+        ]}
+        placeholder = "Search for a listing..."
+        placeholderTextColor = "#888"
+        defaultValue={searchInputRef.current}
+        onChangeText={ (text) => searchInputRef.current = text}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        submitBehavior='blurAndSubmit'
+        
+        />
+      ),
       headerRight: () => (
         <TouchableOpacity onPress={() => router.push("/MessageScreen")} style={{ marginRight: 25 }}>
           <Ionicons name="chatbubbles-outline" size={28} color="white" />
@@ -389,7 +407,15 @@ const styles = StyleSheet.create({
     borderColor: '#155724',
     borderWidth: 1,
   },
-  // searchResultContainer: {
-  //   marginTop: 10,
-  // },
+  listingSearchBox: {
+    backgroundColor: "#fff", // White background
+    color: "#000", // Black text
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    height: 40,
+    width: 250, // Increased width for better visibility
+    fontSize: 15, // Slightly larger text for readability
+    borderWidth: 0.5, // Optional: Adds a subtle border
+    borderColor: "#ccc",
+  }
 });
