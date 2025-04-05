@@ -187,9 +187,7 @@ export default function HomeScreen() {
 
   const booksToDisplay = searchQuery
         ? books.filter(book => book.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        : books ; 
-  
-  
+        : books;
   
   return (
     <>

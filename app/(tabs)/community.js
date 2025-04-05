@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, ScrollView, Text, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { View, SafeAreaView ,ScrollView, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { FIRESTORE_DB, auth } from '../../firebaseConfig';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { Card, Avatar, IconButton } from 'react-native-paper';
+import { addDoc, collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { Card, Avatar, IconButton, Divider, TextInput as RNTextInput, Button } from 'react-native-paper';
 import { logEvent, EVENTS } from '../../analytics';
 
 export default function SocialFeedScreen() {
@@ -12,11 +12,10 @@ export default function SocialFeedScreen() {
   const [posts, setPosts] = useState([]);
   const [userDisplayName, setUserDisplayName] = useState('')
   const filteredPosts = posts.filter(post => post.group === selectedGroup);
-
+  const [comment, setComment] = useState("");
 
   const getPosts = async () => {
     try {
-      // logEvent(EVENTS.VIEWCOMM)
       const snapshot = await getDocs(collection(FIRESTORE_DB, 'community'));
       const documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPosts(documents);
@@ -28,10 +27,12 @@ export default function SocialFeedScreen() {
 
   const handlePost = () => {
     if (postText.trim().length > 0) {
-        const newPost = { id: Date.now().toString(), group: selectedGroup, name: userDisplayName, avatar: 'https://cdn.pixabay.com/photo/2021/07/02/04/48/user-6380868_1280.png', time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0 };
+        const currID = Date.now().toString();
+        const newPost = { id: currID, group: selectedGroup, name: userDisplayName, time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0, userReaction: null, comments: [], showComments: false };
         setPosts([newPost, ...posts]);
         setPostText('');
-        addDoc(collection(FIRESTORE_DB, 'community'), newPost);
+        const docRef = doc(FIRESTORE_DB, 'community', currID);
+        setDoc(docRef, newPost, { merge: true });
     }
     logEvent(EVENTS.POSTING)
   };
@@ -56,9 +57,29 @@ export default function SocialFeedScreen() {
     }));
   };
 
-  useEffect(() => {
+  const toggleComments = (id) => {
+    setPosts(posts.map(post => post.id === id ? { ...post, showComments: !post.showComments } : post));
+  };
 
-    logEvent(EVENTS.VIEWCOMM)
+  const addComment = async (postId) => {
+    if (comment.trim().length === 0) return;
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        const newPost = {
+          ...post,
+          comments: [...post.comments, { commentID: Date.now().toString(), name: userDisplayName, text: comment }]
+        };
+        const docRef = doc(FIRESTORE_DB, 'community', postId);
+        setDoc(docRef, newPost, { merge: true });
+        return newPost;
+      }
+      return post;
+    }));
+    setComment("");
+  };
+
+  useEffect(() => {
+    // logEvent(EVENTS.VIEWCOMM);
     getPosts();
     setUserDisplayName(auth.currentUser.displayName)
   }, []);
@@ -99,7 +120,7 @@ export default function SocialFeedScreen() {
                     title={item.name ? item.name : 'Anonymous'}
                     subtitle={item.time}
                     subtitleStyle={{ fontSize: 12 }}
-                    left={(props) => <Avatar.Image {...props} source={{ uri: item.avatar }} size={40} />}
+                    left={(props) => <Avatar.Text size={40} label={item.name ? item.name[0] : 'A'} style={styles.commentAvatar} />}
                   />
                   <Card.Content>
                     <Text style={styles.postText}>{item.text}</Text>
@@ -111,7 +132,40 @@ export default function SocialFeedScreen() {
                       <IconButton icon="thumb-down" size={16} onPress={() => handleReaction(item.id, 'dislike')} iconColor={item.userReaction === 'dislike' ? 'red' : 'black'} />
                       <Text>{item.dislikes}</Text>
                     </View>
+                    <Button style={styles.showCommentButton} icon={'comment'} mode='contained-tonal' onPress={() => toggleComments(item.id)}>
+                      <Text style={styles.commentToggle}>
+                          {item.showComments ? 'Hide Comments' : 'Show Comments'}
+                        </Text>
+                    </Button>
                   </Card.Actions>
+                  {item.showComments && (
+                  <View style={styles.commentSection}>
+                    <Divider style={styles.divider} />
+                    <Text style={styles.commentsHeader}>Comments</Text>
+                    <Divider style={styles.divider} />
+                    <ScrollView style={{ maxHeight: 200 }}>
+                    {item.comments.map(comment => (
+                      <View key={comment.commentID} style={styles.commentItem}>
+                        <Avatar.Text size={36} label={comment.name[0] ? comment.name[0] : "A"} style={styles.commentAvatar} />
+                        <View style={styles.commentContent}>
+                          <Text style={styles.commentAuthor}>{comment.name}</Text>
+                          <Text style={styles.commentText}>{comment.text}</Text>
+                        </View>
+                      </View>
+                    ))}
+                    </ScrollView>
+                    <View style={styles.commentInputWrapper}>
+                      <RNTextInput
+                          placeholder="Write a comment..."
+                          style={styles.commentInput}
+                          multiline={true}
+                          value={comment}
+                          onChangeText={(text) => setComment(text)}
+                          right={<RNTextInput.Icon icon="send" onPress={() => addComment(item.id)} style={{alignSelf: 'center'}} />}
+                        />
+                    </View>
+                  </View>
+                )}
                 </Card>
             )}
           />
@@ -150,11 +204,15 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   actionsContainer: {
-    padding: 0,
+    flexDirection: 'column'
   },
   actionsRow: {
+    display: 'flex',
+    width: "100%",
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 0
   },
   flexContainer: {
     marginBottom: 16,
@@ -201,5 +259,64 @@ const styles = StyleSheet.create({
   postText: {
     fontSize: 16,
     color: '#333',
-  }
+  },
+  divider: {
+    marginVertical: 8,
+  },
+  showCommentButton: {
+    width: "100%",
+  },
+  commentSection: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+  },
+  commentsHeader: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  commentItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    paddingRight: 10,
+  },
+  commentAvatar: {
+    backgroundColor: '#007bff',
+    marginRight: 8,
+  },
+  commentContent: {
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 8,
+    flex: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  commentAuthor: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+    fontSize: 13,
+  },
+  commentText: {
+    fontSize: 13,
+    color: '#333',
+  },
+  commentInputWrapper: {
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    paddingTop: 8,
+  },
+  commentInput: {
+    flex: 1,
+    height: 50,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    fontSize: 14,
+  },
 });

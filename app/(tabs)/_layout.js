@@ -19,18 +19,20 @@ export default function TabLayout() {
         }}
       >
       <Tabs.Screen
-        name="home"
+        name='home'
         options={{
           title: 'Explore',
+          tabBarLabel: 'Explore',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'book-sharp' : 'book-outline'} color={color} size={24} />
           ),
         }}
       />
       <Tabs.Screen
-        name="community"
+        name='community'
         options={{
           title: 'Community',
+          tabBarLabel: 'Community',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'people-sharp' : 'people-outline'} color={color} size={24}/>
           ),
