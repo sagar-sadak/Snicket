@@ -21,6 +21,7 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(null);
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState('All');
 
   useEffect(() => {
 
@@ -185,9 +186,20 @@ export default function HomeScreen() {
     Alert.alert("Verification Badge", "User has been verified as a GT student");
    };
 
-  const booksToDisplay = searchQuery
-        ? books.filter(book => book.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        : books;
+  
+    const booksToDisplay = books.filter(book => {
+
+    const isUserBook = book.listedByEmail === user?.email; 
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase())
+
+    if (activeTab ==='Mine') {
+      return isUserBook && (!searchQuery || matchesSearch)
+    }
+    if (activeTab === 'All' ) {
+      return !isUserBook && (!searchQuery || matchesSearch)
+    }
+    return !searchQuery || matchesSearch;
+  })
   
   return (
     <>
@@ -226,6 +238,28 @@ export default function HomeScreen() {
     
     <View style={styles.container}>
       
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 10 }}>
+        <TouchableOpacity 
+        onPress={() => setActiveTab('All')}
+        style ={[
+          styles.tabButton,
+          activeTab === 'All' && styles.activeTab
+        ]}>
+        
+        <Text style = {activeTab === 'All'? styles.activeTabText : styles.tabText }>All Listings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+        onPress={() => setActiveTab('Mine')}
+        style ={[
+          styles.tabButton,
+          activeTab ==='Mine' && styles.activeTab
+        ]}>
+        
+        <Text style = {activeTab === 'Mine'? styles.activeTabText : styles.tabText }>My Listings</Text>
+
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={[...booksToDisplay].sort((a, b) => b.timestamp - a.timestamp)}
@@ -236,7 +270,7 @@ export default function HomeScreen() {
           const isUserBook = item.listedByEmail === user?.email;
           
           return (
-          <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
+          <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.bookCard]} onPress={() => handleBookPress(item)}>
             <View style={styles.iconContainer}>
               {item.listedByEmail !== user?.email && (<TouchableOpacity style={styles.reportContainer} onPress={() => report(item)}>
                 <MaterialIcons name="report" size={20} color="red" />
@@ -404,20 +438,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  userBookCard: {
-    backgroundColor: '#d4edda',
-    borderColor: '#155724',
-    borderWidth: 1,
-  },
   listingSearchBox: {
-    backgroundColor: "#fff", // White background
-    color: "#000", // Black text
+    backgroundColor: "#fff", 
+    color: "#000", 
     borderRadius: 10,
     paddingHorizontal: 15,
     height: 40,
-    width: 250, // Increased width for better visibility
-    fontSize: 15, // Slightly larger text for readability
-    borderWidth: 0.5, // Optional: Adds a subtle border
+    width: 250, 
+    fontSize: 15, 
+    borderWidth: 0.5, 
     borderColor: "#ccc",
-  }
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  activeTab: {
+    backgroundColor: '#25292e',
+  },
+  tabText: {
+    color: '#25292e',
+  },
+  activeTabText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
 });
