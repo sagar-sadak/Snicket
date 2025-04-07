@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const [isFocused, setIsFocused] = useState(null);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('All');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
 
@@ -206,57 +207,85 @@ export default function HomeScreen() {
     <Stack.Screen
     options={{
       title: "",
-      headerStyle: {backgroundColor: "#25292e"},
+      headerStyle: {backgroundColor: "#f5f5f5"},
       headerTintColor: "#fff",
       headerTitleAlign: 'center',
       headerLeft: () => (
         <TouchableOpacity onPress={() => router.push("/profile")} style={{ marginLeft: 25 }}>
-          <Ionicons name="person-circle-outline" size={28} color="white" />
+          <Ionicons name="person-circle-outline" size={28} color="344e41" />
         </TouchableOpacity>
       ), 
-      headerTitle: () => (
-        <TextInput
-        ref={searchInputRef}
-        style = {styles.listingSearchBox}
-        placeholder = "Search listing by book title..."
-        placeholderTextColor = "#888"        
-        value={searchQuery}        
-        onChangeText={(text) => setSearchQuery(text)}
-        width = {250}
-        submitBehavior='blurAndSubmit'
-        
-        />
-      ),
+      headerTitle: () =>
+        isSearching ? (
+          <TextInput
+            ref={searchInputRef}
+            style={styles.listingSearchBox}
+            placeholder="Search listing by book title..."
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={(text) => setSearchQuery(text)}
+            width={250}
+            autoFocus
+          />
+        ) : (
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: "#344e41" }}>
+            Snicket
+          </Text>
+        ),
       headerRight: () => (
-        <TouchableOpacity onPress={() => router.push("/MessageScreen")} style={{ marginRight: 25 }}>
-          <Ionicons name="chatbubbles-outline" size={28} color="white" />
+        <View style={{ flexDirection: 'row', alignItems: 'right' }}>
+        <TouchableOpacity
+        onPress={()=> {
+          if (isSearching) {
+            setSearchQuery("");
+          }
+          setIsSearching(prev => !prev);
+        }}
+        style={{ marginRight: 25 }}
+        >
+        <Ionicons name={ isSearching ? "close-circle-outline" : "search-outline"} size={28} color="#344e41" />
         </TouchableOpacity>
-      ), 
+
+        <TouchableOpacity onPress={() => router.push("/MessageScreen")} style={{ marginRight: 25 }}>
+          <Ionicons name="chatbubbles-outline" size={28} color="344e41" />
+        </TouchableOpacity>
+
+        </View>
+
+      )
 
     }}
     />
     
     <View style={styles.container}>
       
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 10 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', borderBottomColor: "#edede9", borderBottomWidth: 1 }}>
         <TouchableOpacity 
         onPress={() => setActiveTab('All')}
-        style ={[
-          styles.tabButton,
-          activeTab === 'All' && styles.activeTab
-        ]}>
+        style ={
+          { flex: 1, alignItems: 'center',
+            paddingVertical: 10, 
+            borderBottomWidth: '3px',
+            borderBottomColor: activeTab === 'All' ? '#e76f51': '#888',
+
+          }          
+        }>      
+        <Text style = {{ fontWeight: activeTab === 'All' ? 'bold' : 'normal',
+           color: activeTab === 'All' ? '#e76f51' : '#888',           
+        }}>All Listings</Text>
         
-        <Text style = {activeTab === 'All'? styles.activeTabText : styles.tabText }>All Listings</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
         onPress={() => setActiveTab('Mine')}
-        style ={[
-          styles.tabButton,
-          activeTab ==='Mine' && styles.activeTab
-        ]}>
+        style ={{ flex: 1, alignItems: 'center',
+         paddingVertical: 10,
+         borderBottomWidth: '3px',
+         borderBottomColor: activeTab === 'Mine' ? '#e76f51': '#888'
+        }}>
         
-        <Text style = {activeTab === 'Mine'? styles.activeTabText : styles.tabText }>My Listings</Text>
+        <Text style = {{ fontWeight: activeTab === 'Mine' ? 'bold' : 'normal',
+           color: activeTab === 'Mine' ? '#e76f51' : '#888' } }>My Listings</Text>
 
         </TouchableOpacity>
       </View>
@@ -295,8 +324,9 @@ export default function HomeScreen() {
         )}}
       />
 
-      <TouchableOpacity style = {styles.button} onPress={handleCreateListing}>
-        <Text style = {styles.buttonText}>Create a Listing</Text>
+      <TouchableOpacity style = {styles.listingButton} onPress={handleCreateListing}>
+        {/* <Text style = {styles.buttonText}>Create a Listing</Text> */}
+        <Ionicons name='add' size={36} color="#84a98c"/>
       </TouchableOpacity>
 
       <Modal visible = {modalVisible} animationType='slide' transparent>
@@ -446,7 +476,7 @@ const styles = StyleSheet.create({
     height: 40,
     width: 250, 
     fontSize: 15, 
-    borderWidth: 0.5, 
+    borderWidth: 0.1, 
     borderColor: "#ccc",
   },
   tabButton: {
@@ -467,4 +497,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  listingButton:{
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30, // Circular button
+    backgroundColor: '#344e41', // Choose your color
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  }
 });
