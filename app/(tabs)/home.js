@@ -326,7 +326,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity style = {styles.listingButton} onPress={handleCreateListing}>
         {/* <Text style = {styles.buttonText}>Create a Listing</Text> */}
-        <Ionicons name='add' size={36} color="#84a98c"/>
+        <Ionicons name='add' size={30} color="#84a98c"/>
       </TouchableOpacity>
 
       <Modal visible = {modalVisible} animationType='slide' transparent>
@@ -503,10 +503,15 @@ const styles = StyleSheet.create({
     right: 20,
     width: 60,
     height: 60,
-    borderRadius: 30, // Circular button
-    backgroundColor: '#344e41', // Choose your color
+    borderRadius: 30, 
+    backgroundColor: '#344e41', 
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
     
   }
 });
