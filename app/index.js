@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import app from '../firebaseConfig';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { logEvent, EVENTS } from '../analytics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Login() {
   const router = useRouter();
@@ -19,12 +20,21 @@ function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const auth = getAuth(app);
+  const group = Math.random() < 0.5 ? "A" : "B";
+
+  const storeData = async () => {
+    try {
+      await AsyncStorage.setItem('userGroup', group);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleSignUp = async () => {
-    try {
-      
+    try {      
       await createUserWithEmailAndPassword(auth, username, password);
-      // logEvent(EVENTS.SIGNUP)
+      logEvent(EVENTS.SIGNUP);
+      await storeData();
       router.replace("(tabs)/home");
       
     } catch (error) {
@@ -36,7 +46,8 @@ function Login() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, username, password);
-      // logEvent(EVENTS.LOGIN)
+      logEvent(EVENTS.LOGIN);
+      await storeData();
       // console.log('amplitude login info sent')
       router.replace("(tabs)/home");
     } catch (error) {
