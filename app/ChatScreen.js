@@ -9,6 +9,9 @@ import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
 import uuid from 'react-native-uuid';
 import { logEvent, EVENTS, setUser } from '../analytics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
@@ -61,9 +64,12 @@ const ChatScreen = () => {
   }
 
   useEffect(() => {
+      setUserGroup();
+    }, []);
 
-    setUser(user.uid)
-    setUserGroup()
+  useEffect(() => {
+
+    setUser(user.uid);
     logEvent(EVENTS.VIEW_CHAT_SCREEN, { userId: user.uid });
 
     // console.log(this.context.getLocale())
