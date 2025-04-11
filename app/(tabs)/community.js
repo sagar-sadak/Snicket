@@ -4,6 +4,7 @@ import { FIRESTORE_DB, auth } from '../../firebaseConfig';
 import { addDoc, collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { Card, Avatar, IconButton, Divider, TextInput as RNTextInput, Button } from 'react-native-paper';
 import { logEvent, EVENTS } from '../../analytics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SocialFeedScreen() {
   const groups = ['General', 'Fiction', 'Non-Fiction', 'Academic'];
@@ -13,6 +14,7 @@ export default function SocialFeedScreen() {
   const [userDisplayName, setUserDisplayName] = useState('')
   const filteredPosts = posts.filter(post => post.group === selectedGroup);
   const [comment, setComment] = useState("");
+  const [group, setGroup] = useState("A");
 
   const getPosts = async () => {
     try {
@@ -28,13 +30,13 @@ export default function SocialFeedScreen() {
   const handlePost = () => {
     if (postText.trim().length > 0) {
         const currID = Date.now().toString();
-        const newPost = { id: currID, group: selectedGroup, name: userDisplayName, time: new Date().toLocaleString(), text: postText, likes: 0, dislikes: 0, userReaction: null, comments: [], showComments: false };
+        const newPost = { id: currID, group: selectedGroup, name: userDisplayName, time: new Date().toLocaleString(), text: postText.trim(), likes: 0, dislikes: 0, userReaction: null, comments: [], showComments: false };
         setPosts([newPost, ...posts]);
         setPostText('');
         const docRef = doc(FIRESTORE_DB, 'community', currID);
         setDoc(docRef, newPost, { merge: true });
+        logEvent(EVENTS.POSTING);
     }
-    logEvent(EVENTS.POSTING)
   };
 
   const handleReaction = (id, type) => {
@@ -78,10 +80,16 @@ export default function SocialFeedScreen() {
     setComment("");
   };
 
+  const setUserGroup = async () => {
+    const value = await AsyncStorage.getItem('userGroup');
+    setGroup(value);
+  };
+
   useEffect(() => {
     // logEvent(EVENTS.VIEWCOMM);
+    setUserGroup();
     getPosts();
-    setUserDisplayName(auth.currentUser.displayName)
+    setUserDisplayName(auth.currentUser.displayName);
   }, []);
 
   return (
@@ -132,13 +140,15 @@ export default function SocialFeedScreen() {
                       <IconButton icon="thumb-down" size={16} onPress={() => handleReaction(item.id, 'dislike')} iconColor={item.userReaction === 'dislike' ? 'red' : 'black'} />
                       <Text>{item.dislikes}</Text>
                     </View>
+                    {group == "A" && (
                     <Button style={styles.showCommentButton} icon={'comment'} mode='contained-tonal' onPress={() => toggleComments(item.id)}>
                       <Text style={styles.commentToggle}>
                           {item.showComments ? 'Hide Comments' : 'Show Comments'}
                         </Text>
                     </Button>
+                    )}
                   </Card.Actions>
-                  {item.showComments && (
+                  {item.showComments && group == "A" && (
                   <View style={styles.commentSection}>
                     <Divider style={styles.divider} />
                     <Text style={styles.commentsHeader}>Comments</Text>

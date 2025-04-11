@@ -1,7 +1,7 @@
 import { init, track, setUserId, Identify, identify } from '@amplitude/analytics-react-native';
 import {auth, FIRESTORE_DB} from './firebaseConfig'
 import { doc, getDoc } from "firebase/firestore";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
 
@@ -66,9 +66,10 @@ const getUserType = async () => {
 };
 
 export const logEvent = async (eventName, properties = {}) => {
-  userType = await getUserType()
-  console.log("got usertype", {...properties, userType})
-  track(eventName, {...properties, userType});
+  const userType = await getUserType();
+  const userGroup = await AsyncStorage.getItem('userGroup');;
+  console.log("got usertype", {...properties, userType, userGroup});
+  track(eventName, {...properties, userType, userGroup});
 };
 
 export const setUser = async(userId, userProperties = {}) => {
