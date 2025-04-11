@@ -32,8 +32,8 @@ const ProfileScreen = () => {
   const router = useRouter();
 
   const exit = () => {
+    logEvent(EVENTS.EXIT)
     signOut(auth).then(() => {
-      logEvent(EVENTS.EXIT)
       console.log("Logged out");
 
     }).catch((error) => {
