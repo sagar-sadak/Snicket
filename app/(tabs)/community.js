@@ -137,19 +137,24 @@ export default function SocialFeedScreen() {
               title={item.name ? item.name : 'Anonymous'}
               subtitle={item.time}
               subtitleStyle={{ fontSize: 12 }}
-              // left={(props) => <Avatar.Text size={40} label={item.name ? item.name[0] : 'A'} style={styles.commentAvatar} />}
               left={(props) => (
-                <View>
-                  <TouchableOpacity onPress={() => navigateToProfile(item.uid)}>
-                    <Avatar.Text
-                      size={40}
-                      label={item.name ? item.name[0] : 'A'}
-                      style={styles.commentAvatarClickable}
-                    />
-                    {/* <Text style={styles.viewProfileText}>View Profile</Text> */}
-                  </TouchableOpacity>
-
-                </View>
+                group === "A" ? (
+                  <View>
+                    <TouchableOpacity onPress={() => navigateToProfile(item.uid)}>
+                      <Avatar.Text
+                        size={40}
+                        label={item.name ? item.name[0] : 'A'}
+                        style={styles.commentAvatarClickable}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Avatar.Text 
+                    size={40} 
+                    label={item.name ? item.name[0] : 'A'} 
+                    style={styles.commentAvatar} 
+                  />
+                )
               )}
             />
             <Card.Content>

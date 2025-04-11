@@ -1,26 +1,33 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import {View, ScrollView, Text, Button, StyleSheet, TouchableOpacity} from 'react-native';
-import {Bubble, GiftedChat, Send} from 'react-native-gifted-chat';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, ScrollView, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { Bubble, GiftedChat, Send } from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useRouter, useLocalSearchParams } from "expo-router";
-import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, where, orderBy, Firestore} from "firebase/firestore";
+import { collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, where, orderBy, Firestore } from "firebase/firestore";
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
 import uuid from 'react-native-uuid';
-import { logEvent, EVENTS, setUser} from '../analytics';
+import { logEvent, EVENTS, setUser } from '../analytics';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState([]);
+  const [group, setGroup] = useState("A");
   const router_param = useLocalSearchParams();
   const auth = getAuth();
   const user = auth.currentUser;
   const db = FIRESTORE_DB;
   const router = useRouter();
+  
 
   const navigateToProfile = (uid) => {
     logEvent(EVENTS.VIEW_OTHER_PROFILE);
     router.push(`/user/${uid}`);
+  };
+
+  const setUserGroup = async () => {
+    const value = await AsyncStorage.getItem('userGroup');
+    setGroup(value);
   };
 
   const getMessages = async () => {
@@ -32,21 +39,21 @@ const ChatScreen = () => {
 
       const snapshot = await getDocs(q);
       const userMessages = snapshot.docs.map((doc) => {
-          // console.log(doc.data())
-          const firebaseData = doc.data();
-          firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
-          return {
-            _id: uuidv4(),
-            text: firebaseData.message.text,
-            createdAt: firebaseData.message.createdAt.toDate(),
-            user: firebaseData.message.user
-          };
+        // console.log(doc.data())
+        const firebaseData = doc.data();
+        firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
+        return {
+          _id: uuidv4(),
+          text: firebaseData.message.text,
+          createdAt: firebaseData.message.createdAt.toDate(),
+          user: firebaseData.message.user
+        };
       });
 
       setMessages(userMessages);
 
       console.log(userMessages)
-    
+
     } catch (error) {
       console.error('Error fetching documents: ', error);
       return [];
@@ -56,10 +63,11 @@ const ChatScreen = () => {
   useEffect(() => {
 
     setUser(user.uid)
+    setUserGroup()
     logEvent(EVENTS.VIEW_CHAT_SCREEN, { userId: user.uid });
 
     // console.log(this.context.getLocale())
-    
+
     // setMessages([
     //   {
     //     _id: 1,
@@ -88,35 +96,35 @@ const ChatScreen = () => {
     const messageRef = collection(db, "UserConversations", router_param.chat_id, "messages");
     const q = query(messageRef, orderBy("message.createdAt", "desc"));
 
-    const unsubscribe = onSnapshot(q,  (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
 
       const userMessages = snapshot.docs.map((doc) => {
-          // console.log(doc.data())
-          const firebaseData = doc.data();
-          firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
-          return {
-            _id: uuid.v4(),
-            text: firebaseData.message.text,
-            createdAt: firebaseData.message.createdAt.toDate(),
-            user: firebaseData.message.user
-          };
+        // console.log(doc.data())
+        const firebaseData = doc.data();
+        firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
+        return {
+          _id: uuid.v4(),
+          text: firebaseData.message.text,
+          createdAt: firebaseData.message.createdAt.toDate(),
+          user: firebaseData.message.user
+        };
       });
-    
+
       setMessages(userMessages);
     });
 
-      return () => unsubscribe();
+    return () => unsubscribe();
 
-    }, [router_param.chat_id]);
+  }, [router_param.chat_id]);
 
 
   const onSend = useCallback(async (messages = []) => {
     // setMessages((previousMessages) =>
     //   GiftedChat.append(previousMessages, messages),
     // );
-    
 
-    try {      
+
+    try {
       const messageRef = collection(db, 'UserConversations', router_param.chat_id, 'messages');
 
       let new_message = {
@@ -126,12 +134,12 @@ const ChatScreen = () => {
       }
 
       await addDoc(messageRef, new_message);
-      
+
       setUser(user.uid)
       logEvent(EVENTS.MESSAGE_SENT, { userId: user.uid })
       console.log("Message Saved to DB")
-    } 
-    catch (error){
+    }
+    catch (error) {
       console.error(error);
     }
 
@@ -143,7 +151,7 @@ const ChatScreen = () => {
         <View>
           <MaterialCommunityIcons
             name="send-circle"
-            style={{marginBottom: 5, marginRight: 5}}
+            style={{ marginBottom: 5, marginRight: 5 }}
             size={32}
             color="#2e64e5"
           />
@@ -171,29 +179,31 @@ const ChatScreen = () => {
   };
 
   const scrollToBottomComponent = () => {
-    return(
+    return (
       <FontAwesome name='angle-double-down' size={22} color='#333' />
     );
   }
 
   return (
 
-    <View style= {{flex:1}}>
-    <TouchableOpacity style = {styles.profileButton} onPress = {() => navigateToProfile(router_param.second_user)}>
-      <Text style = {styles.profileButtonText}>Visit This User's Profile</Text>
-    </TouchableOpacity>
-    <GiftedChat
-      messages={messages}
-      onSend={(messages) => onSend(messages)}
-      user={{
-        _id: 1,
-      }}
-      renderBubble={renderBubble}
-      alwaysShowSend
-      renderSend={renderSend}
-      scrollToBottom
-      scrollToBottomComponent={scrollToBottomComponent}
-    />
+    <View style={{ flex: 1 }}>
+      {group == "A" && (
+        <TouchableOpacity style={styles.profileButton} onPress={() => navigateToProfile(router_param.second_user)}>
+          <Text style={styles.profileButtonText}>Visit This User's Profile</Text>
+        </TouchableOpacity>
+      )}
+      <GiftedChat
+        messages={messages}
+        onSend={(messages) => onSend(messages)}
+        user={{
+          _id: 1,
+        }}
+        renderBubble={renderBubble}
+        alwaysShowSend
+        renderSend={renderSend}
+        scrollToBottom
+        scrollToBottomComponent={scrollToBottomComponent}
+      />
     </View>
   );
 };
@@ -206,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileButton : {
+  profileButton: {
     backgroundColor: '#2e64e5',
     padding: 10,
     alignItems: 'center',
