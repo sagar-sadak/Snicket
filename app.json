@@ -11,6 +11,17 @@
       ]
     ],
     "name": "MAS-Project",
-    "slug": "MAS-Project"
+    "slug": "MAS-Project",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7676194d-55bd-4447-954d-17abbfc20fae"
+      }
+    },
+    "android": {
+      "package": "com.macdeath.MASProject"
+    }
   }
 }

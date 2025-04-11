@@ -220,7 +220,7 @@ export default function HomeScreen() {
           <TextInput
             ref={searchInputRef}
             style={styles.listingSearchBox}
-            placeholder="Search listing by book title..."
+            placeholder="Search listings..."
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={(text) => setSearchQuery(text)}
@@ -265,7 +265,7 @@ export default function HomeScreen() {
         style ={
           { flex: 1, alignItems: 'center',
             paddingVertical: 10, 
-            borderBottomWidth: '3px',
+            borderBottomWidth: 3,
             borderBottomColor: activeTab === 'All' ? '#e76f51': '#888',
 
           }          
@@ -280,7 +280,7 @@ export default function HomeScreen() {
         onPress={() => setActiveTab('Mine')}
         style ={{ flex: 1, alignItems: 'center',
          paddingVertical: 10,
-         borderBottomWidth: '3px',
+         borderBottomWidth: 3,
          borderBottomColor: activeTab === 'Mine' ? '#e76f51': '#888'
         }}>
         
