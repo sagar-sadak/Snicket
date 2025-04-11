@@ -3,7 +3,7 @@ import {View, ScrollView, Text, Button, StyleSheet, TouchableOpacity} from 'reac
 import {Bubble, GiftedChat, Send} from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { router, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import {collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, where, orderBy, Firestore} from "firebase/firestore";
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
@@ -16,10 +16,11 @@ const ChatScreen = () => {
   const auth = getAuth();
   const user = auth.currentUser;
   const db = FIRESTORE_DB;
+  const router = useRouter();
 
-  const handleVisitProfile = () => {
-    console.log('navigate to this user profile');
-    alert('Functionality coming soon!')
+  const navigateToProfile = (uid) => {
+    logEvent(EVENTS.VIEW_OTHER_PROFILE);
+    router.push(`/user/${uid}`);
   };
 
   const getMessages = async () => {
@@ -178,8 +179,7 @@ const ChatScreen = () => {
   return (
 
     <View style= {{flex:1}}>
-    
-    <TouchableOpacity style = {styles.profileButton} onPress = {handleVisitProfile}>
+    <TouchableOpacity style = {styles.profileButton} onPress = {() => navigateToProfile(router_param.second_user)}>
       <Text style = {styles.profileButtonText}>Visit This User's Profile</Text>
     </TouchableOpacity>
     <GiftedChat
