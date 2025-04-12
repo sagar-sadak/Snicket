@@ -29,6 +29,7 @@ export const EVENTS = {
     MESSAGE_SENT: 'Message_Sent',
     VIEW_MESSAGE_SCREEN: 'View_MessageScreen',
     VIEW_CHAT_SCREEN: 'View_ChatScreen',
+    VIEW_OTHER_PROFILE: 'View another persons profile'
   };
 
 const getProfileDocument = async () => {

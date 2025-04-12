@@ -7,6 +7,8 @@ import { doc, setDoc, getDoc, addDoc, collection, updateDoc, Timestamp } from "f
 import { onAuthStateChanged, updateProfile, signOut, prodErrorMap } from "firebase/auth";
 import { useRouter } from 'expo-router';
 import { logEvent, EVENTS, setUser as setUserAnalytics } from '../analytics';
+import { Avatar, Card, Divider } from 'react-native-paper';
+
 
 const ProfileScreen = () => {
   const [email, setEmail] = useState('');
@@ -32,8 +34,8 @@ const ProfileScreen = () => {
   const router = useRouter();
 
   const exit = () => {
+    logEvent(EVENTS.EXIT)
     signOut(auth).then(() => {
-      logEvent(EVENTS.EXIT)
       console.log("Logged out");
 
     }).catch((error) => {
@@ -463,21 +465,43 @@ const ProfileScreen = () => {
     </Modal>
   );
 
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.profileArea}>
-        <Image
-          source={{ uri: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
-          style={styles.profileImage}
-        />
-        <TouchableOpacity onPress={openNameModal}>
+  const renderProfileHeader = () => {
+      return (
+        <View style={styles.profileHeader}>
+          <Avatar.Text 
+            size={80} 
+            label={userName[0] || 'A'} 
+            style={styles.avatar}
+          />
+          {/* <Text style={styles.userName}>{userName|| 'Anonymous'}</Text> */}
+          <TouchableOpacity onPress={openNameModal}>
           <Text style={styles.userName}>
             {userName || 'Add Your Name'}
             <Text style={styles.editIcon}> ✎</Text>
           </Text>
         </TouchableOpacity>
         <Text style={styles.email}>{email}</Text>
+  
+        </View>
+      );
+    };
+
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.profileArea}>
+        {renderProfileHeader()}
+        {/* <Image
+          source={{ uri: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png' }}
+          style={styles.profileImage}
+        /> */}
+        {/* <TouchableOpacity onPress={openNameModal}>
+          <Text style={styles.userName}>
+            {userName || 'Add Your Name'}
+            <Text style={styles.editIcon}> ✎</Text>
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.email}>{email}</Text> */}
       </View>
 
       <TouchableOpacity style={styles.userTypeButton} onPress={openUserTypeModal}>
@@ -839,6 +863,26 @@ const styles = StyleSheet.create({
   editIcon: {
     fontSize: 16,
     color: '#007AFF',
+  },
+  profileHeader: {
+    alignItems: 'center',
+    margin: 16,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  avatar: {
+    marginBottom: 16,
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
 });
 
