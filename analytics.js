@@ -2,6 +2,7 @@ import { init, track, setUserId, Identify, identify } from '@amplitude/analytics
 import {auth, FIRESTORE_DB} from './firebaseConfig'
 import { doc, getDoc } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants'
 
 init(process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY)
 
