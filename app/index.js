@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { FIRESTORE_DB } from '../firebaseConfig';
 import { 
   View, 
   Text, 
   TextInput, 
   TouchableOpacity, 
-  StyleSheet, 
+  StyleSheet,
+  Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
@@ -30,7 +33,35 @@ function Login() {
     }
   };
 
+  const isUserSuspended = async () => {
+    const suspendedUsersRef = collection(FIRESTORE_DB, "SuspendedUsers");
+    const q = query(suspendedUsersRef, where("username", "==", username));
+
+    const snapshot = await getDocs(q);
+    console.log(snapshot.docs.length)
+    if (snapshot.docs.length === 0) {
+      console.log('No reports found for user:', username);
+      return false; // No reports found, user is not suspended
+    } else {
+      console.log('Reports found for user:', username);
+      return true; // User is suspended
+    }
+    
+  }
+
+
   const handleSignUp = async () => {
+
+    if(await isUserSuspended(username)) {
+      Alert.alert(
+        "Account Suspended",
+        "Your account has been suspended. Please contact support.",
+        [{ text: "OK" }],
+        { cancelable: false }
+      );
+      return;
+    }
+
     try {      
       await createUserWithEmailAndPassword(auth, username, password);
       logEvent(EVENTS.SIGNUP);
@@ -44,6 +75,17 @@ function Login() {
   };
 
   const handleLogin = async () => {
+
+    if(await isUserSuspended(username)) {
+      Alert.alert(
+        "Account Suspended",
+        "Your account has been suspended. Please contact support.",
+        [{ text: "OK" }],
+        { cancelable: false }
+      );
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, username, password);
       logEvent(EVENTS.LOGIN);
