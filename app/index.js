@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { FIRESTORE_DB } from '../firebaseConfig';
+import 'react-native-get-random-values';
 import { 
   View, 
   Text, 

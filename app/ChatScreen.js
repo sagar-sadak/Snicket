@@ -7,7 +7,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { collection, addDoc, onSnapshot, deleteDoc, doc, setDoc, getDocs, query, where, orderBy, Firestore } from "firebase/firestore";
 import { FIRESTORE_DB } from '../firebaseConfig';
 import { getAuth } from "firebase/auth";
-import uuid from 'react-native-uuid';
+// import uuid from 'react-native-uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { logEvent, EVENTS, setUser } from '../analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -109,7 +110,7 @@ const ChatScreen = () => {
         const firebaseData = doc.data();
         firebaseData.message.user._id = firebaseData.sender === user.uid.toString() ? 1 : 2;
         return {
-          _id: uuid.v4(),
+          _id: uuidv4(),
           text: firebaseData.message.text,
           createdAt: firebaseData.message.createdAt.toDate(),
           user: firebaseData.message.user
