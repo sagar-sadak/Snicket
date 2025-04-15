@@ -82,6 +82,8 @@ export const setUser = async(userId, userProperties = {}) => {
       userProperties = {...userProperties, userType}
     }
   setUserId(userId);
+  const userGroup = await AsyncStorage.getItem('userGroup');
+  userProperties = {...userProperties, userGroup}
   console.log("set user properties", userProperties)
 
   const identifyObj = new Identify();
