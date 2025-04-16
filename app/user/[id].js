@@ -4,8 +4,7 @@ import { FIRESTORE_DB, auth } from '../../firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { Avatar, Card, Divider } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-
-import startChat from '../(tabs)/home'
+import { logEvent, EVENTS } from '../../analytics';
 
 const { width } = Dimensions.get('window');
 
