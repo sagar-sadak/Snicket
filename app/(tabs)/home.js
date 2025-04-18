@@ -295,17 +295,29 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}  
         numColumns={2}
         columnWrapperStyle = {styles.row}
-        renderItem={({ item }) => {
+        renderItem={({ item , index}) => {
           const isUserBook = item.listedByEmail === user?.email;
           
           return (
-          <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.bookCard]} onPress={() => handleBookPress(item)}>
+          <TouchableOpacity style = {[styles.bookCard, isUserBook && styles.userBookCard]} onPress={() => handleBookPress(item)}>
+            
             <View style={styles.iconContainer}>
               {item.listedByEmail !== user?.email && (<TouchableOpacity style={styles.reportContainer} onPress={() => report(item)}>
                 <MaterialIcons name="report" size={20} color="red" />
                 <Text style={{color: 'red', fontSize: 12}}>Report post</Text>
               </TouchableOpacity>)}
-              
+
+              {isUserBook && (
+                <TouchableOpacity style= {[styles.promoteButton,
+                  index % 2 === 1 && { right: -11.5},
+                ]}
+                 
+                onPress={()=> alert('Get Premium to Promote your Listing!')}
+                >
+                  <Ionicons name='flash' size={23} color={'gold'}/>
+                </TouchableOpacity>
+              )}
+
             { item.listedByEmail.slice(-10) != "gatech.edu" &&
                 <MaterialIcons style={{alignSelf: 'flex-end'}} onPress={verified} name="verified" size={24} color="black" />
                 }
@@ -416,6 +428,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  userBookCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 8,
+    width: '48%',
+    alignItems: 'right',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
   bookCover: {
     width: 100,
     height: 150,
@@ -511,7 +535,21 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    elevation: 5,
-    
-  }
+    elevation: 5,    
+  },
+  promoteButton: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    backgroundColor: '#fff',
+    padding: 5,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3, // shadow effect for Android
+    shadowColor: '#000', // shadow effect for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3.5,
+  },
 });
