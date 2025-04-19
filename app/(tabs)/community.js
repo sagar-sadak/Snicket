@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { FIRESTORE_DB, auth } from '../../firebaseConfig';
-import { addDoc, collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { Card, Avatar, IconButton, Divider, TextInput as RNTextInput, Button } from 'react-native-paper';
 import { logEvent, EVENTS } from '../../analytics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-
+import PremiumPrompt from '.././PremiumPrompt';
 
 export default function SocialFeedScreen() {
-  const groups = ['General', 'Fiction', 'Non-Fiction', 'Academic'];
+  const groups = ['+', 'General', 'Fiction', 'Non-Fiction', 'Academic'];
   const [selectedGroup, setSelectedGroup] = useState('General');
   const [postText, setPostText] = useState('');
   const [posts, setPosts] = useState([]);
-  const [userDisplayName, setUserDisplayName] = useState('')
+  const [userDisplayName, setUserDisplayName] = useState('');
   const filteredPosts = posts.filter(post => post.group === selectedGroup);
   const [comment, setComment] = useState("");
   const [group, setGroup] = useState("A");
+  const [showPrompt, setShowPrompt] = useState(false);
 
   const router = useRouter();
 
@@ -94,6 +95,15 @@ export default function SocialFeedScreen() {
     router.push(`/user/${uid}`);
   };
 
+  const groupSelect = (group) => {
+    if (group != "+") {
+      setSelectedGroup(group);
+    }
+    else {
+      setShowPrompt(true);
+    }
+  };
+
   useEffect(() => {
     logEvent(EVENTS.VIEWCOMM);
     setUserGroup();
@@ -107,7 +117,7 @@ export default function SocialFeedScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupScroll}>
           <View style={styles.groupContainer}>
             {groups.map(group => (
-              <TouchableOpacity key={group} onPress={() => setSelectedGroup(group)} style={[styles.groupButton, selectedGroup === group && styles.groupButtonActive]}>
+              <TouchableOpacity key={group} onPress={() => groupSelect(group)} style={[styles.groupButton, selectedGroup === group && styles.groupButtonActive]}>
                 <Text style={[styles.groupButtonText, selectedGroup === group && styles.groupButtonTextActive]}>{group}</Text>
               </TouchableOpacity>
             ))}
@@ -149,10 +159,10 @@ export default function SocialFeedScreen() {
                     </TouchableOpacity>
                   </View>
                 ) : (
-                  <Avatar.Text 
-                    size={40} 
-                    label={item.name ? item.name[0] : 'A'} 
-                    style={styles.commentAvatar} 
+                  <Avatar.Text
+                    size={40}
+                    label={item.name ? item.name[0] : 'A'}
+                    style={styles.commentAvatar}
                   />
                 )
               )}
@@ -183,7 +193,7 @@ export default function SocialFeedScreen() {
                 <ScrollView style={{ maxHeight: 200 }}>
                   {item.comments.map(comment => (
                     <View key={comment.commentID} style={styles.commentItem}>
-                      <Avatar.Text size={36} label={comment.name[0] ? comment.name[0] : "A"} style={styles.commentAvatar} />
+                      <Avatar.Text size={36} label={comment.name ? comment.name[0] : "A"} style={styles.commentAvatar} />
                       <View style={styles.commentContent}>
                         <Text style={styles.commentAuthor}>{comment.name}</Text>
                         <Text style={styles.commentText}>{comment.text}</Text>
@@ -205,6 +215,13 @@ export default function SocialFeedScreen() {
             )}
           </Card>
         )}
+      />
+      <PremiumPrompt
+        visible={showPrompt}
+        onClose={() => {
+          setShowPrompt(false)
+          router.push({ pathname: "/community" });
+        }}
       />
     </SafeAreaView>
   );
