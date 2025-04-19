@@ -9,10 +9,9 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_KEY" : "AIzaSyAuvUKamRMzDzUFq4t_8Myj9p4hWeEI3bM",
-        "EXPO_PUBLIC_AMPLITUDE_API_KEY" : "344af1d7eb077411624fb6078fb2321d"        
+        "EXPO_PUBLIC_API_KEY": "@expo/secrets/EXPO_PUBLIC_API_KEY",
+        "EXPO_PUBLIC_AMPLITUDE_API_KEY": "@expo/secrets/EXPO_PUBLIC_AMPLITUDE_API_KEY"
       }
-
     }
   }
 }

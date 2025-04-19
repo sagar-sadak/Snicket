@@ -17,11 +17,16 @@
         "origin": false
       },
       "eas": {
-        "projectId": "26a2e98d-b754-45de-b19a-65a28f036d64"
+        "projectId": "7676194d-55bd-4447-954d-17abbfc20fae"
       }
     },
     "android": {
-      "package": "com.macdeath.MASProject"
-    }
+      "package": "com.macdeath.MASProject",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "owner": "macdeath"
   }
 }
