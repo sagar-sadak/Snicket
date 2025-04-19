@@ -22,7 +22,6 @@ function EventsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-
       handlePremiumFeature();
     }, [])
   );

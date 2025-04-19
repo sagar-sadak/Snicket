@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   subscribeButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#EFBF04',
     padding: 12,
     borderRadius: 10,
     flex: 1,
