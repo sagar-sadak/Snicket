@@ -9,6 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Timestamp } from "firebase/firestore";
 import { logEvent, EVENTS, setUser} from '../../analytics';
+import PremiumPrompt from '../PremiumPrompt';
 
 export default function HomeScreen() {
   const auth = getAuth();
@@ -23,6 +24,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('All');
   const [isSearching, setIsSearching] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
 
@@ -312,7 +314,7 @@ export default function HomeScreen() {
                   index % 2 === 1 && { right: -11.5},
                 ]}
                  
-                onPress={()=> alert('Get Premium to Promote your Listing!')}
+                onPress={()=> setShowPrompt(true)}
                 >
                   <Ionicons name='flash' size={23} color={'gold'}/>
                 </TouchableOpacity>
@@ -366,6 +368,13 @@ export default function HomeScreen() {
       </Modal>
 
     </View>
+    <PremiumPrompt
+        visible={showPrompt}
+        onClose={() => {
+          setShowPrompt(false)
+          router.push({ pathname: "/home" });
+        }}
+      />
     </>
   );
 }
