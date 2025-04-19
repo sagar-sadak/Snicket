@@ -95,7 +95,7 @@ export default function SocialFeedScreen() {
   };
 
   useEffect(() => {
-    // logEvent(EVENTS.VIEWCOMM);
+    logEvent(EVENTS.VIEWCOMM);
     setUserGroup();
     getPosts();
     setUserDisplayName(auth.currentUser.displayName);
