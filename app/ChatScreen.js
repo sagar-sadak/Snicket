@@ -193,7 +193,7 @@ const ChatScreen = () => {
   return (
 
     <View style={{ flex: 1 }}>
-      {group == "A" && (
+      {group == "B" && (
         <TouchableOpacity style={styles.profileButton} onPress={() => navigateToProfile(router_param.second_user)}>
           <Text style={styles.profileButtonText}>Visit This User's Profile</Text>
         </TouchableOpacity>

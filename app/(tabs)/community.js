@@ -148,7 +148,7 @@ export default function SocialFeedScreen() {
               subtitle={item.time}
               subtitleStyle={{ fontSize: 12 }}
               left={(props) => (
-                group === "A" ? (
+                group === "B" ? (
                   <View>
                     <TouchableOpacity onPress={() => navigateToProfile(item.uid)}>
                       <Avatar.Text
@@ -177,7 +177,7 @@ export default function SocialFeedScreen() {
                 <IconButton icon="thumb-down" size={16} onPress={() => handleReaction(item.id, 'dislike')} iconColor={item.userReaction === 'dislike' ? 'red' : 'black'} />
                 <Text>{item.dislikes}</Text>
               </View>
-              {group == "A" && (
+              {group == "B" && (
                 <Button style={styles.showCommentButton} icon={'comment'} mode='contained-tonal' onPress={() => toggleComments(item.id)}>
                   <Text style={styles.commentToggle}>
                     {item.showComments ? 'Hide Comments' : 'Show Comments'}
@@ -185,7 +185,7 @@ export default function SocialFeedScreen() {
                 </Button>
               )}
             </Card.Actions>
-            {item.showComments && group == "A" && (
+            {item.showComments && group == "B" && (
               <View style={styles.commentSection}>
                 <Divider style={styles.divider} />
                 <Text style={styles.commentsHeader}>Comments</Text>
