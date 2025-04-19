@@ -23,7 +23,6 @@ const ChatScreen = () => {
   const db = FIRESTORE_DB;
   const router = useRouter();
   
-
   const navigateToProfile = (uid) => {
     logEvent(EVENTS.VIEW_OTHER_PROFILE);
     router.push(`/user/${uid}`);

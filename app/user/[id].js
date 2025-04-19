@@ -53,7 +53,7 @@ export default function UserProfileScreen() {
       alert("Error", "Failed to Start Chat")
     }
 
-    router.push("/MessageScreen")
+    router.push('/MessageScreen');
 
   }
 

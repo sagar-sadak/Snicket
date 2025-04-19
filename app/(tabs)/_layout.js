@@ -38,6 +38,16 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name='EventsScreen'
+        options={{
+          title: 'Events',
+          tabBarLabel: 'Events',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'easel-sharp' : 'easel-outline'} color={color} size={24}/>
+          ),
+        }}
+      />
       
       
     </Tabs>

@@ -125,15 +125,17 @@ function Login() {
           placeholderTextColor="#aaa" />
       </View>
 
-      <View style={styles.button}>
-        <TouchableOpacity
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button}
+          activeOpacity={0.5}
           onPress={handleLogin}>
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.button}>
-        <TouchableOpacity
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button}
+          activeOpacity={0.5}
           onPress={handleSignUp}>
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
@@ -184,18 +186,24 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 15,
   },
-  button: {
-    backgroundColor: '#1A73E8',
+  buttonContainer:{
     width: '100%',
-    padding: 15,
+    marginTop: 20
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#1A73E8',
     borderRadius: 25,
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    padding: 12,
+    
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '500',
+    textAlign: 'center',
   },
   signupLink: {
     marginTop: 20,
